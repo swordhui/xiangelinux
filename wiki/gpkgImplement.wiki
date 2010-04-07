@@ -23,28 +23,28 @@
 软件编译脚本应该负责以下事情:
 
 ===2.1  geturl===
-告诉gpkg要下载软件的URL/校验码/大小。 可以通过变量返回，具体方法需要再讨论。
+    告诉gpkg要下载软件的URL/校验码/大小。 可以通过变量返回，具体方法需要再讨论。
 
 
 ===2.2 getdep===
-告诉gpkg软件包的依赖关系. 可以通过变量返回，具体方法需要再讨论。
-也可以通过向stdout打印字串返回，
-如 echo "gtk2 libxxx"<br>
-用空格隔开. 不依赖任何包包时返回空字符串.
+    告诉gpkg软件包的依赖关系. 可以通过变量返回，具体方法需要再讨论。
+    也可以通过向stdout打印字串返回，
+    如 echo "gtk2 libxxx"<br>
+    用空格隔开. 不依赖任何包包时返回空字符串.
 
-复杂一点可以支持版本限定, 如<br>
-gtk(>2.12) libxxx(<3.0) foo(=2.1)  bar(>2.13<2.15)
+    复杂一点可以支持版本限定, 如<br>
+    gtk(>2.12) libxxx(<3.0) foo(=2.1)  bar(>2.13<2.15)
 
 ===2.3 unpack===
-gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack功能，将下载的源码解到指定目录, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure.<br>
-成功返回0, 否则1并显示错误信息. 
+    gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack功能，将下载的源码解到指定目录, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure.<br>
+    成功返回0, 否则1并显示错误信息. 
 
-可以调用公共bash函数die和errcheck.<br>
-*die $MESG*<br>
-显示$MESG后调用exit 1<br>
+    可以调用公共bash函数die和errcheck.<br>
+    * die $MESG*<br>
+    显示$MESG后调用exit 1<br>
 
-*errcheck $MESG*<br>
-先检查当前的返回值$?, 如果不为0, 调用die $MESG
+    * errcheck $MESG*<br>
+    先检查当前的返回值$?, 如果不为0, 调用die $MESG
 
 
 
@@ -77,3 +77,9 @@ gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack�
     脚本下载软件所在的网页, 解析网页找到最新的版本, 显示出来。
 
     可以写一个模板文件, 想编译新软件包时, 拷贝模板文件并编译即可.
+
+= 3. 脚本库=
+
+    软件包脚本库和Gentoo的ebuild库类似, 根据功能类别分组, 放在/var/xiange/libs/目录, 每个类别有自己的目录, 如app-sys.<br>
+    类别目录下为软件目录, 由软件名称决定, 如autoconf, automake等.
+    软件目录里包含软件各个版本的安装脚本，如autoconf-2.61.xgp, autoconf-2.62.xgp等
