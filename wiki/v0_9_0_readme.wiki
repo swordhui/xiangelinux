@@ -13,16 +13,16 @@
 
 = 2.使用方法 =
 
-        *2.1 make an empty work directory, such as ~/xiange.<br>
-        *2.2 decompress umk scripts achieve to work directory<br>
-        *2.3 enter scripts directory of work directory<br>
-        *2.4 run ./download<br>
-        *2.5 after the first packge download ok, run ./build in anthor term, with root privilege.<br>
-        *2.6 wait build ok. about 400 packages...<br>
-        *2.7 chroot to work directory, set password, edit /etc/fstab<br>
-        *2.8 compile kernel for your machine.<br>
-        *2.9 install GRUB or GRUB2.<br>
-        *2.10 reboot.. good luck<br>
+        * 2.1 make an empty work directory, such as ~/xiange.<br>
+        * 2.2 decompress umk scripts achieve to work directory<br>
+        * 2.3 enter scripts directory of work directory<br>
+        * 2.4 run ./download<br>
+        * 2.5 after the first packge download ok, run ./build in anthor term, with root privilege.<br>
+        * 2.6 wait build ok. about 400 packages...<br>
+        * 2.7 chroot to work directory, set password, edit /etc/fstab<br>
+        * 2.8 compile kernel for your machine.<br>
+        * 2.9 install GRUB or GRUB2.<br>
+        * 2.10 reboot.. good luck<br>
         
 
         
