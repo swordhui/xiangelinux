@@ -1,15 +1,16 @@
 #labels Featured
 #版本命名规则
 
-= Introduction =
+= 简介 =
 
 本文描述了通用的版本命名规则。<br>
 当前版本: 0.1.0
 
-== History ==
+== 修改历史 ==
 ||version||author||date||
 ||0.1.0||swordhui||2010-04-07, 14:31||
 
+<br>
 
 = Details =
 
