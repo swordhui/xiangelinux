@@ -18,8 +18,14 @@
         * 2.3 进入工作目录的scripts子目录(解压后得到)<br>
         * 2.4 运行./download 下载所需的软件包和补丁. 源码下载到工作目录的source子目录。<br>
             # 如果有软件包下载失败，请手动下载到工作目录的source目录，再次运行./download会自动跳过。
+            # 也可以直接修改包对应脚本文件的URL地址。
         * 2.5 下载完毕后，以root身份，运行 ./build<br>
+         
         * 2.6 漫长的编译过程，体验刷屏乐趣。大约编译400个左右的软件包.<br>
+            # 已安装的软件列表在/var/lfs/installed.log,记录了软件包名字和安装时间。
+            # 编译目录在工作目录的tmp子目录。使用tmpfs会加快编译速度，减少磁盘损耗。tmpfs至少要3GB.
+            # mkdir /mnt/xiange/tmp; mkdir /dev/shm/xgtmp; chmod 1777 /dev/shm/xgtmp; mount --bind /dev/shm/xgtmp /mnt/xiange/tmp;
+
         * 2.7 用chroot转到工作目录, 设置密码(passwd), 编辑/etc/fstab<br>
         * 2.8 给自己的机器编译安装内核.<br>
         * 2.9 安装GRUB 或 GRUB2.<br>
