@@ -23,8 +23,8 @@
          
         * 2.6 漫长的编译过程，体验刷屏乐趣。大约编译400个左右的软件包.<br>
             # 已安装的软件列表在/var/lfs/installed.log,记录了软件包名字和安装时间。
-            # 编译目录在工作目录的tmp子目录。使用tmpfs会加快编译速度，减少磁盘损耗。tmpfs至少要3GB.
-            # mkdir /mnt/xiange/tmp; mkdir /dev/shm/xgtmp; chmod 1777 /dev/shm/xgtmp; mount --bind /dev/shm/xgtmp /mnt/xiange/tmp;
+            # 编译目录在工作目录的tools/temp子目录。使用tmpfs会加快编译速度，减少磁盘损耗。tmpfs至少要3GB.
+            # mkdir /mnt/xiange/tools/temp; mkdir /dev/shm/xgtmp; chmod 1777 /dev/shm/xgtmp; mount --bind /dev/shm/xgtmp /mnt/xiange/tools/temp;
 
         * 2.7 用chroot转到工作目录, 设置密码(passwd), 编辑/etc/fstab<br>
         * 2.8 给自己的机器编译安装内核.<br>
