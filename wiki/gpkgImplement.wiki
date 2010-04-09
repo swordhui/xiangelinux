@@ -20,27 +20,31 @@
 
 = 2. 软件包脚本文件=
 
-从上面可以看到，每个软件包需要自己的编译脚本，提供以下功能:
+从上面可以看到，每个软件包需要自己的编译脚本，提供以下函数(功能):
 
-===2.1  getsrc===
+===2.1  gpkg_getsrc===
     gpkg需要下载源码和补丁时,调用这个功能。源码需要下载到/var/xiange/source/目录.<br>
     实现时可以调用下载函数download_and_check, 参数为 URL MD5Sum Size<br>
     如: download_and_check http://www.abc.com/autoconf-2.63.tar.bz2 01003FBC88901234 115260. 这个函数返回0 表示成功， 返回1表示下载失败，返回2表示尺寸校验失败， 返回3表示MD5校验失败。
     直接返回download_and_check的值即可。
     
-===2.1  getbin===
+===2.1  gpkg_getbin===
     gpkg需要下载预编译好的包时,调用这个功能。实现时可以调用下载函数download_and_check.<br>
     返回0表示成功, 其他表示失败。<br>
     先留接口，以后再考虑实现。
 
-===2.3 getdep===
-    告诉gpkg软件包的依赖关系. 可以通过变量返回，具体方法需要再讨论(参考Gentoo)。
-    也可以通过向stdout打印字串返回，
-    如 echo "gtk2 libxxx"<br>
-    用空格隔开. 不依赖任何包包时返回空字符串.
+===2.3 gpkg_dep===
+    告诉gpkg软件包的依赖关系. 这是一个变量。
+    如"gtk2 libxxx"<br>
+    用空格隔开. 不依赖任何包包时为空字串"".
 
     复杂一点可以支持版本限定, 如<br>
-    gtk(>2.12) libxxx(<3.0) foo(=2.1)  bar(>2.13<2.15)
+    gtk(>2.12) libxxx(<3.0) foo(=2.1)  bar(>2.13<2.15)<br>
+
+    再复杂一点支持条件编译<br>
+    如 "gtk[X,-xxx](>2.12) libxxx[opt1,-opt2](=2.1)"
+
+
 
 ===2.3 unpack===
     gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack功能，将下载的源码解到/tmp/xiange/sources/包名称/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
@@ -88,8 +92,26 @@
 
     可以写一个模板文件, 想编译新软件包时, 拷贝模板文件并编译即可.
 
+===2.9 gpkg和包编译脚本的接口===
+    gpkg想调用以上功能时，需要将脚本包含进来，直接调用相关的函数即可。如果编译脚本名为autoconf-2.63.xgb,gpkg调用时需要: <br>
+    . path/autoconf-2.63.xgb<br>
+    gpkg_getsrc <br>
+    #check return value. <br>
+
+ 
+
 = 3. 脚本库=
 
     软件包脚本库和Gentoo的ebuild库类似, 根据功能类别分组, 放在/var/xiange/libs/目录, 每个类别有自己的目录, 如app-sys.<br>
     类别目录下为软件目录, 由软件名称决定, 如autoconf, automake等.
     软件目录里包含软件各个版本的安装脚本，如autoconf-2.61.xgp, autoconf-2.62.xgp等
+
+= 4. 编译脚本可用的函数接口=
+
+    一些经常使用的功能可用写成函数，供软件包编译脚本使用。
+
+=== 4.1 download_and_check ===
+    ||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
+    ||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，*表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
+    ||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
+  
