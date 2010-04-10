@@ -112,6 +112,6 @@
 
 === 4.1 download_and_check() ===
     ||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
-    ||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，*表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
+    ||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，0表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
     ||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
   
