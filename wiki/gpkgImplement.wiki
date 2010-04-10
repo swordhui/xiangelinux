@@ -22,13 +22,13 @@
 
 从上面可以看到，每个软件包需要自己的编译脚本，提供以下函数(功能):
 
-===2.1  gpkg_getsrc===
+===2.1  gpkg_getsrc()===
     gpkg需要下载源码和补丁时,调用这个功能。源码需要下载到/var/xiange/source/目录.<br>
     实现时可以调用下载函数download_and_check, 参数为 URL MD5Sum Size<br>
     如: download_and_check http://www.abc.com/autoconf-2.63.tar.bz2 01003FBC88901234 115260. 这个函数返回0 表示成功， 返回1表示下载失败，返回2表示尺寸校验失败， 返回3表示MD5校验失败。
     直接返回download_and_check的值即可。
     
-===2.1  gpkg_getbin===
+===2.1  gpkg_getbin()===
     gpkg需要下载预编译好的包时,调用这个功能。实现时可以调用下载函数download_and_check.<br>
     返回0表示成功, 其他表示失败。<br>
     先留接口，以后再考虑实现。
@@ -46,7 +46,7 @@
 
 
 
-===2.3 unpack===
+===2.3 gpkg_unpack()===
     gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack功能，将下载的源码解到/tmp/xiange/sources/包名称/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
     成功返回0, 否则1并显示错误信息. 
 
@@ -59,7 +59,7 @@
 
 
 
-===2.4 config===
+===2.4 gpkg_config()===
     gpkg调用脚本的unpack解压到/tmp/xiange/包名称/sources/后，进入这个目录，接着调用config功能对软件包进行配置. 配置由三个大部分组成, 一为安装目录, 即--prefix, --sysconfdir等, 这个每个软件包都一样, 用变量$XIANGEDIR表示
     $XIANGEDIR=--prefix=/usr --sysconfdir=/etc 还有其他的运行库目录了, 文档目录等.<br>
 
@@ -70,12 +70,12 @@
     成功返回0, 否则2并显示错误信息.<br>
 
 
-===2.5 build ===
+===2.5 gpkg_build() ===
     gpkg调用脚本config成功后，调用build功能编译软件包.<br>
     成功返回0, 否则3并显示错误信息.<br>
  
 
-===2.6 install===
+===2.6 gpkg_install()===
     编译完成后，gpkg调用install将软件包安装到/tmp/xiange/包名称/pack/. 这个位置用$D表示。注意不能直接安装到根目录！<br>
 
     接着gpkg会枚举$D目录下所有文件，对每个文件使用记录工具xgfileinfo得到文件信息，包括文件名，文件类型，最后修改时间，权限，大小，MD5等信息，记录到数据库文件$D/var/xiange/db/包名称/file文件，然后将软件包信息，包括软件包名称, 配置参数, 安装时间, 占用磁盘大小等存入$D/var/xiange/db/包名称/info文件. 然后将软件包编辑脚本拷贝到$D/var/xiange/db/包名称/xgbuild. 最后，将$D目录的所有文件拷贝到根目录。<br>
@@ -83,10 +83,10 @@
     将$D目录下的文件打包，即可以做成Binary格式的发行包。
 
 
-===2.7 postinst===
+===2.7 gpkg_postinst()===
     gpkg将软件包拷贝到根目录后, 调用脚本的postinst , 执行一些特有的操作, 如创建用户, 修改启动脚本等.这些功能可以调用gpkg提供的接口函数完成。
 
-===2.8 checkupdate===
+===2.8 gpkg_checkupdate()===
     需要检查当前软件有没有最新版本时, 调用这个功能. <br>
     脚本下载软件所在的网页, 解析网页找到最新的版本, 显示出来。
 
@@ -110,7 +110,7 @@
 
     一些经常使用的功能可用写成函数，供软件包编译脚本使用。
 
-=== 4.1 download_and_check ===
+=== 4.1 download_and_check() ===
     ||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
     ||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，*表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
     ||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
