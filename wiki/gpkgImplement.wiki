@@ -13,10 +13,10 @@
 
 1.1 得到软件包对应的脚本文件autoconf-2.61.xgb,失败则返回1<br>
     * 可以通过函数find_pack()实现
-    * find_pack() 先用ls列出所有包类型目录中的子目录，放掉变量pack_type里
-    * 对pack_type里的个子目录, 用ls列出属于这个类别的所有包，用grep进行匹配操作，如果成功，将结果放入result变量里，如app-sys/autoconf, app-test/autoconf-test
+    * find_pack() 先用ls列出所有包类型目录中的子目录，放入变量pack_type里
+    * 对pack_type里的个子目录, 用ls列出属于这个类别的所有包，进行匹配操作，如果成功，将结果放入result变量里，如app-sys/autoconf, app-test/autoconf-test
     * 继续操作直到所有目录匹配完成
-    * 对每个result里的结果，找到最新的包文件，如app-sys/autoconf/autoconf-2.63.xgb
+    * 对每个result里的结果，找到最新的包编译脚本文件，如app-sys/autoconf/autoconf-2.63.xgb
     * 如果搜索到多个结果，让用户选择下载哪个
 1.2 调用包编译脚本文件的下载接口函数<br>
     * 将步骤1.1得到的xgb文件包含进来，如“. path/app-sys/autoconf/autoconf-2.63.xgb”
