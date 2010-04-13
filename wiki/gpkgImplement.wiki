@@ -9,11 +9,19 @@
 = 1.下载软件包=
 
 下载软件包通过gpkg -d 命令, 例如 gpkg -d autoconf. <br>
-首先，gpkg需要知道autoconf软件包的下载地址(URL), 和校验码/大小信息。这些信息每个软件包都不同，所以每个软件包都需要一个脚本文件，描述软件包相关的信息。假如autoconf对应的脚本文件为autoconf.xgp, 下载的流程如下
+首先，gpkg需要知道autoconf软件包的下载地址(URL), 和校验码/大小信息。这些信息每个软件包都不同，所以每个软件包都需要一个脚本文件，描述软件包相关的信息。假如autoconf对应的脚本文件为autoconf.xgb (xiange build file), 下载的流程如下
 
-1.1 得到软件包对应的脚本文件autoconf.xgp,失败则返回1<br>
-1.2 从脚本文件获取待下载文件的URL/MD5Sum/Size信息<br>
-1.3 在本地(/var/xiange/sources/)检查文件是否已下载，是的话转1.5<br>
+1.1 得到软件包对应的脚本文件autoconf-2.61.xgb,失败则返回1<br>
+    * 可以通过函数find_pack()实现
+    * find_pack() 先用ls列出所有包类型目录中的子目录，放掉变量pack_type里
+    * 对pack_type里的个子目录, 用ls列出属于这个类别的所有包，用grep进行匹配操作，如果成功，将结果放入result变量里，如app-sys/autoconf, app-test/autoconf-test
+    * 继续操作直到所有目录匹配完成
+    * 对每个result里的结果，找到最新的包文件，如app-sys/autoconf/autoconf-2.63.xgb
+    * 如果搜索到多个结果，让用户选择下载哪个
+1.2 调用包编译脚本文件的下载接口函数<br>
+    * 将步骤1.1得到的xgb文件包含进来，如“. path/app-sys/autoconf/autoconf-2.63.xgb”
+    * 调用接口函数gpkg_getsrc()
+1.3 脚本实现gpkg_getsrc()时，需要先在本地(/var/xiange/sources/)检查文件是否已下载，是的话转1.5<br>
 1.4 下载文件到本地(/var/xiange/sources/)，失败后重试。重试次数超过5,失败返回2<br>
 1.5 校验MD5Sum和文件大小，失败后重新下载，重试次数超过5， 返回3<br>
 1.6 重复直至所有文件下载完毕，返回0表示成功。<br>
