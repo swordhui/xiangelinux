@@ -104,7 +104,7 @@
     gpkg想调用以上功能时，需要将脚本包含进来，直接调用相关的函数即可。如果编译脚本名为autoconf-2.63.xgb,gpkg调用时需要: <br>
     . path/autoconf-2.63.xgb<br>
     gpkg_getsrc <br>
-    #check return value. <br>
+    # check return value. <br>
 
  
 
