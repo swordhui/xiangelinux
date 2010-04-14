@@ -18,10 +18,11 @@
     * 继续操作直到所有目录匹配完成
     * 对每个result里的结果，找到最新的包编译脚本文件，如app-sys/autoconf/autoconf-2.63.xgb
     * 如果搜索到多个结果，让用户选择下载哪个
-1.2 调用包编译脚本文件的下载接口函数<br>
+1.2 调用包编译脚本文件的接口函数xgb_init<br>
     * 将步骤1.1得到的xgb文件包含进来，如“. path/app-sys/autoconf/autoconf-2.63.xgb”
-    * 调用接口函数gpkg_getsrc()
-1.3 脚本实现gpkg_getsrc()时，需要先在本地(/var/xiange/sources/)检查文件是否已下载，是的话转1.5<br>
+    * 调用接口函数xgb_init()
+1.3 从接口变量SRC_URI获取待下载文件的URL, 可能有多个
+1.3 对每个文件， 从源码目录(/var/xiange/sources/)检查文件是否已下载，是的话转1.5<br>
 1.4 下载文件到本地(/var/xiange/sources/)，失败后重试。重试次数超过5,失败返回2<br>
 1.5 校验MD5Sum和文件大小，失败后重新下载，重试次数超过5， 返回3<br>
 1.6 重复直至所有文件下载完毕，返回0表示成功。<br>
@@ -109,13 +110,17 @@
 ===2.7 xgb_postinst()===
     gpkg将软件包拷贝到根目录后, 调用脚本的postinst , 执行一些特有的操作, 如创建用户, 修改启动脚本等.这些功能可以调用gpkg提供的接口函数完成。
 
-===2.8 gpkg_checkupdate()===
+===2.8 xgb_postrm()===
+    gpkg删除软件包所有文件后，调用postrm函数进行最后的清除，如删除用户，去掉启动脚本等。。
+
+
+===2.9 xgb_checkupdate()===
     需要检查当前软件有没有最新版本时, 调用这个功能. <br>
     脚本下载软件所在的网页, 解析网页找到最新的版本, 显示出来。
 
     可以写一个模板文件, 想编译新软件包时, 拷贝模板文件并编译即可.
 
-===2.9 gpkg和包编译脚本的接口===
+===2.10 gpkg和包编译脚本的接口===
     gpkg想调用以上功能时，需要将脚本包含进来，直接调用相关的函数即可。如果编译脚本名为autoconf-2.63.xgb,gpkg调用时需要: <br>
     . path/autoconf-2.63.xgb<br>
     gpkg_getsrc <br>
@@ -125,16 +130,12 @@
 
 = 3. 脚本库=
 
-    软件包脚本库和Gentoo的ebuild库类似, 根据功能类别分组, 放在/var/xiange/libs/目录, 每个类别有自己的目录, 如app-sys.<br>
-    类别目录下为软件目录, 由软件名称决定, 如autoconf, automake等.
-    软件目录里包含软件各个版本的安装脚本，如autoconf-2.61.xgp, autoconf-2.62.xgp等
+    软件包脚本库和Gentoo的ebuild库类似, 根据功能类别分组, 放在/var/xiange/xglibs/目录, 每个类别有自己的目录, 如app-sys.<br>
+    类别目录下为软件目录, 由软件名称决定, 如autoconf, automake等.<br>
+    软件目录里包含软件各个版本的安装脚本，如autoconf-2.61.xgp, autoconf-2.62.xgp等<br>
+
+    弦歌的脚本库用git维护，公开地址为 git://github.com/swordhui/xglibs.git <br>
 
 = 4. 编译脚本可用的函数接口=
 
     一些经常使用的功能可用写成函数，供软件包编译脚本使用。
-
-=== 4.1 download_and_check() ===
-||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
-||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，0表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
-||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
-  
