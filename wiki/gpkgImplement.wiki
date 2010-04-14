@@ -34,7 +34,7 @@
     编译脚本文件需要提供如下变量给gpkg：
 
 ||变量名称||描述||示例取值||备注||
-||DESCRIPTION||软件包的简短描述||"This is a sample skeleton xiange build script file"||无||
+||DESCRIPTION||软件包的简短描述||"This is a sample skeleton xiange build script file"||||
     
     
 ===2.2  xgb_init()===
