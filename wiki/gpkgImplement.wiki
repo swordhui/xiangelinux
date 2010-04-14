@@ -34,7 +34,10 @@
     编译脚本文件需要提供如下变量给gpkg：
 
 ||变量名称||描述||示例取值||备注||
-||DESCRIPTION||软件包的简短描述||"This is a sample skeleton xiange build script file"||||
+||DESCRIPTION||软件包简短描述||"This is a sample skeleton xiange build script file"||||
+||HOMEPAGE||软件包主页||"http://foo.bar.com/"||||
+||SRC_URI||源码文件地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件||
+||BIN_URI||二进制包地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件<br>暂不实现||
     
     
 ===2.2  xgb_init()===
@@ -117,7 +120,7 @@
     一些经常使用的功能可用写成函数，供软件包编译脚本使用。
 
 === 4.1 download_and_check() ===
-    ||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
-    ||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，0表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
-    ||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
+||功能||从指定的网址下载文件，放到/var/xiange/source目录, 并校验MD5Sum||
+||参数||URL : 文件位置，如 http://www.abc.com/test.tar.bz2<br>MD5SUM: 文件的MD5校验码，0表示不校验。<br>Size: 文件大小，以Byte为单位。0表示不要校验文件大小。||
+||返回值||0表示成功<br>1表示下载失败<br>2表示文件大小不同<br>3表示MD5校验码错误||
   
