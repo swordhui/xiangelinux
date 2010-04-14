@@ -38,6 +38,8 @@
 ||HOMEPAGE||软件包主页||"http://foo.bar.com/"||||
 ||SRC_URI||源码文件地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件||
 ||BIN_URI||二进制包地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件<br>暂不实现||
+<br>
+<br>
     
     
 ===2.2  xgb_init()===
