@@ -31,7 +31,7 @@
 从上面可以看到，每个软件包需要自己的编译脚本，提供以下函数(功能):
 
 ===2.1  变量===
-    编译脚本文件需要提供如下变量给gpkg：
+    编译脚本文件需要提供如下变量给gpkg：<br>
 
 ||变量名称||描述||示例取值||备注||
 ||DESCRIPTION||软件包简短描述||"This is a sample skeleton xiange build script file"||||
@@ -39,6 +39,16 @@
 ||SRC_URI||源码文件地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件||
 ||BIN_URI||二进制包地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件<br>暂不实现||
 <br>
+<br>
+
+    编译脚本也可以使用如下gpkg提供的变量(注意在脚本里不要修改这些变量的取值)<br>
+||变量名称||描述||示例取值||备注||
+||N||软件包名称||"autoconfg"||||
+||V||软件包版本||"2.6.31"||||
+||XGPATH_SCRIPT||编译脚本所在的目录||"/var/xiange/xglibs/app-sys/autoconf"||||
+||XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
+||XGPATH_UNPACK||解压目标目录||"/tmp/xiange/sources"||||
+||XGPATH_DEST||临时安装目录||"/tmp/xiange/pack/autoconf-2.6.8"||||
 <br>
     
     
