@@ -49,6 +49,8 @@
 ||XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
 ||XGPATH_UNPACK||解压目标目录||"/tmp/xiange/sources"||||
 ||XGPATH_DEST||临时安装目录||"/tmp/xiange/pack/autoconf-2.6.8"||||
+
+    gpkg在调用编译脚本前，会首先对这些变量赋值。
 <br>
     
     
