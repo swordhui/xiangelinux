@@ -30,18 +30,17 @@
 
 从上面可以看到，每个软件包需要自己的编译脚本，提供以下函数(功能):
 
-===2.1  gpkg_getsrc()===
-    gpkg需要下载源码和补丁时,调用这个功能。源码需要下载到/var/xiange/source/目录.<br>
-    实现时可以调用下载函数download_and_check, 参数为 URL MD5Sum Size<br>
-    如: download_and_check http://www.abc.com/autoconf-2.63.tar.bz2 01003FBC88901234 115260. 这个函数返回0 表示成功， 返回1表示下载失败，返回2表示尺寸校验失败， 返回3表示MD5校验失败。
-    直接返回download_and_check的值即可。
+===2.1  变量===
+    编译脚本文件需要提供如下变量给gpkg：
+    ||变量名称||描述||示例取值||备注||
+    ||DESCRIPTION||软件包的简短描述||"This is a sample skeleton xiange build script file"||无||
     
-===2.1  gpkg_getbin()===
-    gpkg需要下载预编译好的包时,调用这个功能。实现时可以调用下载函数download_and_check.<br>
-    返回0表示成功, 其他表示失败。<br>
-    先留接口，以后再考虑实现。
+    
+===2.2  xgb_init()===
+    gpkg调用xgb文件的接口函数前，首先调用xgb_init. 再这里可以重新对一些变量赋值。<br>
+    这个函数可以不实现，gpkg会调用默认的xgb_init函数，直接返回0.
 
-===2.3 gpkg_dep===
+===2.3 Remove this===
     告诉gpkg软件包的依赖关系. 这是一个变量。
     如"gtk2 libxxx"<br>
     用空格隔开. 不依赖任何包包时为空字串"".
@@ -54,44 +53,42 @@
 
 
 
-===2.3 gpkg_unpack()===
-    gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack功能，将下载的源码解到/tmp/xiange/sources/包名称/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
+===2.3 xgb_unpack()===
+    gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack函数。<br>
+    xgb_unpack需要将下载的源码(位于$XGSOUCE目录)解压到$XGUNPACK目录，缺省是/tmp/xiange/sources/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
     成功返回0, 否则1并显示错误信息. 
+   
 
-    可以调用公共bash函数die和errcheck.<br>
-    * die $MESG*<br>
-    显示$MESG后调用exit 1<br>
+===2.4 xgb_config()===
+    gpkg在调用玩xgb_unpack后，调用xgb_config配置软件包。<br>
+    调用xgb_config前，当前目录仍在$XGUNPACK目录(即/tmp/xiange/sources/)<br>
+    xgb_config 首先要进入或创建编译目录，然后调用configure配置软件包。配置由三个大部分组成, 一为安装目录, 即--prefix, --sysconfdir等, 这个每个软件包都一样, 用变量$XGCONFPATH表示
+    $XGCONFPATH=--prefix=/usr --sysconfdir=/etc 还有其他的运行库目录了, 文档目录等.<br>
 
-    * errcheck $MESG*<br>
-    先检查当前的返回值$?, 如果不为0, 调用die $MESG
-
-
-
-===2.4 gpkg_config()===
-    gpkg调用脚本的unpack解压到/tmp/xiange/包名称/sources/后，进入这个目录，接着调用config功能对软件包进行配置. 配置由三个大部分组成, 一为安装目录, 即--prefix, --sysconfdir等, 这个每个软件包都一样, 用变量$XIANGEDIR表示
-    $XIANGEDIR=--prefix=/usr --sysconfdir=/etc 还有其他的运行库目录了, 文档目录等.<br>
-
-    第二部分为C/C++的优化参数, 用$XIANGE_CFLAGS表示, 如-o2等<br>
+    第二部分为C/C++的优化参数, 用$XG_CFLAGS表示, 如-o2等<br>
 
     第三步部分为软件包特有的, 可以直接写到脚本里, 或暴露给用户设置(待讨论).<br>
 
-    成功返回0, 否则2并显示错误信息.<br>
+    成功返回0, 否则返回2并显示错误信息.<br>
 
 
-===2.5 gpkg_build() ===
+===2.5 xgb_build() ===
     gpkg调用脚本config成功后，调用build功能编译软件包.<br>
+    xgb_build应该调用make编译整个软件包，然后根据需要编译文档
     成功返回0, 否则3并显示错误信息.<br>
  
 
-===2.6 gpkg_install()===
-    编译完成后，gpkg调用install将软件包安装到/tmp/xiange/包名称/pack/. 这个位置用$D表示。注意不能直接安装到根目录！<br>
+===2.6 xgb_install()===
+    编译完成后，gpkg调用install将软件包安装到临时打包目录/tmp/xiange/包名称/pack/. 这个位置用$XGDEST表示。脚本编写者要读注意不能直接安装到根目录！<br>
+    xgb_install应该调用make install将软件包安装在这个临时目录。脚本编写者要读懂make install的代码，确保软件包只安装在临时目录，不会安装在根目录。<br>
+    安装成功后返回0, 失败返回4并显示错误信息。
 
-    接着gpkg会枚举$D目录下所有文件，对每个文件使用记录工具xgfileinfo得到文件信息，包括文件名，文件类型，最后修改时间，权限，大小，MD5等信息，记录到数据库文件$D/var/xiange/db/包名称/file文件，然后将软件包信息，包括软件包名称, 配置参数, 安装时间, 占用磁盘大小等存入$D/var/xiange/db/包名称/info文件. 然后将软件包编辑脚本拷贝到$D/var/xiange/db/包名称/xgbuild. 最后，将$D目录的所有文件拷贝到根目录。<br>
+    xgb_install返回后，gpkg会枚举$XGDEST目录下所有文件，对每个文件使用记录工具xgfileinfo得到文件信息，包括文件名，文件类型，最后修改时间，权限，大小，MD5等信息，记录到数据库文件$XGDEST/var/xiange/db/包名称/file文件，然后将软件包信息，包括软件包名称, 配置参数, 安装时间, 占用磁盘大小等存入$XGDEST/var/xiange/db/包名称/info文件. 然后将软件包编辑脚本拷贝到$D/var/xiange/db/包名称/xgbuild. 最后，将$XGDEST目录的所有文件用tar打成二进制包，如binutils-2.6.8.tar.bz2， 拷贝到/var/xiange/packages目录.这个二进制包可以分发<br>
 
-    将$D目录下的文件打包，即可以做成Binary格式的发行包。
+    最后一步是将二进制包解压到根目录,然后调用下面要提到的xgb_postinst.
 
 
-===2.7 gpkg_postinst()===
+===2.7 xgb_postinst()===
     gpkg将软件包拷贝到根目录后, 调用脚本的postinst , 执行一些特有的操作, 如创建用户, 修改启动脚本等.这些功能可以调用gpkg提供的接口函数完成。
 
 ===2.8 gpkg_checkupdate()===
