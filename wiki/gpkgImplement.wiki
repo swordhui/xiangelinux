@@ -39,6 +39,7 @@
 ||HOMEPAGE||软件包主页||"http://foo.bar.com/"||||
 ||SRC_URI||源码文件地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件||
 ||BIN_URI||二进制包地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件<br>暂不实现||
+||XGB_CONFIG||执行configure时的参数||"CC=gcc --prefix=/usr"||gpkg会记录到打包文件里||
 <br>
 <br>
 
