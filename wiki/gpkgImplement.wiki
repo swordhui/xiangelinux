@@ -42,10 +42,11 @@
 <br>
 <br>
 
-    编译脚本也可以使用如下gpkg提供的变量(注意在脚本里不要修改这些变量的取值)<br>
+    编译脚本也可以使用如下gpkg提供的变量(注意在脚本里不要使用这些变量，或修改这些变量的取值)<br>
 ||变量名称||描述||示例取值||备注||
 ||N||软件包名称||"autoconfg"||||
 ||V||软件包版本||"2.6.31"||||
+||T||软件包类别||"app-sys"||||
 ||XGPATH_SCRIPT||编译脚本所在的目录||"/var/xiange/xglibs/app-sys/autoconf"||||
 ||XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
 ||XGPATH_UNPACK||解压目标目录||"/tmp/xiange/sources"||||
