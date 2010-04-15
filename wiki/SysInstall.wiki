@@ -18,16 +18,20 @@
 手动安装即通过手动的方式安装所有软件包，如先调用gpkg -i linux-header 安装所有Linux头文件， 再调用gpkg -i glibc 安装C库， 再调用gpkg -i bin-utils安装二进制工具链。安装的步骤和LFS手册类似，只是细节交给gpkg处理。
 
 具体步骤如下:
-    * 格式化分区，挂载到/mnt/xiange，即工作目录。
-    * 下载工具链编译脚本和软件包编译脚本库
-    * 运行工具链脚本，自动生成工具链，放在/mnt/xiange/tools目录下，内有installed.log, 表示tools目录都安装了什么工具。
-    * 使用chroot转到工作目录: chroot /mnt/xiange /tools/bin/bash (注意先挂载proc,sysfs,和dev)
-    * 这时可以自由运行gpkg, 安装需要的软件包。
-    * gpkg -i baselayout 创建根目录，包括/dev,/sys,/usr,/bin,/sbin等等
-    * gpkg -i linux-headers 安装头文件
-    * 每装完一个包，都可以用qpkg 查看安装信息，可以对系统了如指掌。
-    * 继续安装，知道整个系统可以脱离/tools直接运行。
-    * 设置密码，修改fstab, 编译内核，安装GRUB, 重新启动。
+    * 3.1 格式化分区，挂载到/mnt/xiange，即工作目录。
+    * 3.2 编译工具链
+        # 3.2.1 直接下载工具链到/tools
+        # 3.2.2 下载编辑脚本，从头生成工具链
+           运行工具链脚本，自动生成工具链，放在/mnt/xiange/tools目录下，内有installed.log, 表示tools目录都安装了什么工具。
+    * 3.3 更新编译脚本库
+           运行tools目录下的gpkg --sync /mnt/xiange, 会自动更新编译脚本库
+    * 3.4 使用chroot转到工作目录: chroot /mnt/xiange /tools/bin/bash (注意先挂载proc,sysfs,和dev，并拷贝/etc/resolv.conf 到/mnt/xiange/etc目录)
+    * 3.5 这时可以自由运行gpkg, 安装需要的软件包。
+        # gpkg -i baselayout 创建根目录，包括/dev,/sys,/usr,/bin,/sbin等等
+        # gpkg -i linux-headers 安装头文件
+        # 每装完一个包，都可以用qpkg 查看安装信息，可以对系统了如指掌。
+        # 继续安装，知道整个系统可以脱离/tools直接运行。
+    * 3.6 设置密码，修改fstab, 编译内核，安装GRUB, 重新启动。
 
 
 
