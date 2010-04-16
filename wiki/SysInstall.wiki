@@ -61,25 +61,36 @@ mkdir /mnt/xg/tmp
 mount --bind /dev/shm/xgtmp /mnt/xg/tmp
 }}}
 
+===3.3 准备工具链 (/tools目录) ===
+    * 可以直接下载工具链，在根目录解压，即可跳过此步骤。
+    * 若想自己重新编译工具链，下载编译脚本。
+        
 
+===3.4 chroot到工作环境 ===
+    * 拷贝/etc/resolv.conf 到/mnt/xg/etc目录, 保证chroot可以访问网络。
 
+===3.5 更新编译脚本库 ===
+    * 执行gpkg --sync
 
+===3.6 安装baselayout ===
+    * 执行gpkg -s base 检查能否从库中找到baselayout
+    * 执行gpkg -i baselayout 安装baselayout
+    * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包
+    * 执行 gpkg -l baselayout列出包中所有文件。
 
+===3.7 安装linux-headers ===
 
+    
+===3.8 这时可以自由运行gpkg, 安装需要的软件包。===
+    * 每装完一个包，都可以用qpkg 查看安装信息，可以对系统了如指掌。
+    *继续安装，知道整个系统可以脱离/tools直接运行。
 
-    * 3.2 编译工具链
-        * 3.2.1 直接下载工具链到/tools
-        * 3.2.2 下载编辑脚本，从头生成工具链
-           运行工具链脚本，自动生成工具链，放在/mnt/xiange/tools目录下，内有installed.log, 表示tools目录都安装了什么工具。
-    * 3.3 更新编译脚本库
-           运行tools目录下的gpkg --sync /mnt/xiange, 会自动更新编译脚本库
-    * 3.4 使用chroot转到工作目录: chroot /mnt/xiange /tools/bin/bash (注意先挂载proc,sysfs,和dev，并拷贝/etc/resolv.conf 到/mnt/xiange/etc目录)
-    * 3.5 这时可以自由运行gpkg, 安装需要的软件包。
-        # gpkg -i baselayout 创建根目录，包括/dev,/sys,/usr,/bin,/sbin等等
-        # gpkg -i linux-headers 安装头文件
-        # 每装完一个包，都可以用qpkg 查看安装信息，可以对系统了如指掌。
-        # 继续安装，知道整个系统可以脱离/tools直接运行。
-    * 3.6 设置密码，修改fstab, 编译内核，安装GRUB, 重新启动。
+===3.9 准备启动===
+    * 设置密码，
+    * 修改fstab
+    * 编译内核，
+    * 安装GRUB2 或 GRUB
+    * 重新启动
 
 
 
