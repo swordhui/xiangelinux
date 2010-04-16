@@ -154,7 +154,18 @@ I have no name!:/#
 
 
 ===3.5 更新编译脚本库 ===
-    * 在chroot的环境里,执行gpkg --sync
+    * 在chroot的环境里,执行gpkg --sync, 可以看到如下信息:
+{{{
+I have no name!:/etc# gpkg --sync
+Initialized empty Git repository in /var/xiange/xglibs/.git/
+remote: Counting objects: 26, done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 26 (delta 5), reused 0 (delta 0)
+Receiving objects: 100% (26/26), done.
+Resolving deltas: 100% (5/5), done.
+I have no name!:/etc# 
+
+}}}
 
 ===3.6 安装baselayout ===
     * 执行gpkg -s base 检查能否从库中找到baselayout
