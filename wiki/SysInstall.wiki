@@ -115,16 +115,22 @@ gpkg-0.10.1 2010-04-16 10:18:34
     * 拷贝/etc/resolv.conf 到/mnt/xg/etc目录, 保证chroot后可以访问网络。
     * 可以将一下命令写入脚本 doxg, 以后每次执行chroot时都需要做这些..
 {{{
+       
+        mount /dev/XXXX /mnt/xg
+
         mkdir -p /mnt/xg/proc
         mkdir -p /mnt/xg/sys
         mkdir -p /mnt/xg/dev
-
-        mount /dev/XXXX /mnt/xg
         mount -t proc none /mnt/xg/proc
         mount -t sysfs none /mnt/xg/sys
         mount --bind /dev /mnt/xg/dev
 
-        #tmpfs
+        #copy resolv.conf
+        [ -d /mnt/xg/etc ] || mkdir /mnt/xg/etc
+        [ -f /mnt/xg/etc/resolv.conf ] || cp /etc/resolv.conf /mnt/xg/etc
+
+
+        #tmpfs 如果编译tools前已经挂载了，这步可以省掉
         mkdir /dev/shm/xgtmp
         chmod 1777 /dev/shm/xgtmp
         mount --bind /dev/shm/xgtmp /mnt/xg/tmp
@@ -137,9 +143,18 @@ gpkg-0.10.1 2010-04-16 10:18:34
                /tools/bin/bash
 }}}
 
+      成功后，能看到如下信息:
+{{{
+I have no name!:/# ls
+dev  lost+found  proc  sys  tmp  tools	var  xgstage0
+I have no name!:/# 
+
+}}}
+
+
 
 ===3.5 更新编译脚本库 ===
-    * 执行gpkg --sync
+    * 在chroot的环境里,执行gpkg --sync
 
 ===3.6 安装baselayout ===
     * 执行gpkg -s base 检查能否从库中找到baselayout
