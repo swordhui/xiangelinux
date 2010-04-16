@@ -71,7 +71,7 @@ mount --bind /dev/shm/xgtmp /mnt/xg/tmp
         # 完成后，会得到一个完整的工具链，在/mnt/xg/tools目录下。里面有记录文件installed.log, 记录了每个软件包的名称和安装时间。
         # 其实..也不必完全等代./download下载完毕再执行./build. 下载完gcc后就可以执行了，然后边下载边编译，节省时间。
 
-    安装工具列表: (名称/安装时间)
+    安装工具列表: (名称-版本/安装时间, 在/mnt/xg/tools/installed.log)
 {{{
 binutils-2.19.1 2010-04-16 15:46:44
 gcc-4.4.0 2010-04-16 17:09:43
@@ -167,13 +167,168 @@ I have no name!:/etc#
 
 }}}
 
+    * 如果失败,是网络连接问题,请检查网络连接和/etc/resolv.conf
+
 ===3.6 安装baselayout ===
     * 执行gpkg -s base 检查能否从库中找到baselayout
-    * 执行gpkg -i baselayout 安装baselayout
-    * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包
+{{{
+I have no name!:/var/xiange/xglibs# gpkg -s base
+* sys-apps/baselayout
+	Available:	 0.1.0
+	Installed:	 None
+
+search base, result count 1
+I have no name!:/var/xiange/xglibs# 
+}}}
+
+    * 执行gpkg -i baselayout 安装baselayout, 系统会自动下载安装,信息如下:
+{{{
+I have no name!:/# gpkg -i baselayout
+Begin download baselayout-0.1.0...
+downloading from http://xiangelinux.googlecode.com/files/baselayout-0.1.0.tar.bz2, retry 0...
+--2010-04-16 11:00:57--  http://xiangelinux.googlecode.com/files/baselayout-0.1.0.tar.bz2
+Resolving xiangelinux.googlecode.com... 72.14.203.82
+Connecting to xiangelinux.googlecode.com|72.14.203.82|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 890 [application/x-bzip2]
+Saving to: `/var/xiange/sources/baselayout-0.1.0.tar.bz2.tmp'
+
+100%[========================================>] 890         --.-K/s   in 0.002s  
+
+2010-04-16 11:00:57 (418 KB/s) - `/var/xiange/sources/baselayout-0.1.0.tar.bz2.tmp' saved [890/890]
+
+Download OK
+[Unpack] dir=/tmp/xiange/sources
+`/bin/sh' -> `/tools/bin/bash'
+# make all directorys.
+Install to /tmp/xiange/pack/baselayout-0.1.0
+`/tmp/xiange/pack/baselayout-0.1.0/usr/man' -> `share/man'
+`/tmp/xiange/pack/baselayout-0.1.0/usr/doc' -> `share/doc'
+`/tmp/xiange/pack/baselayout-0.1.0/usr/info' -> `share/info'
+`/tmp/xiange/pack/baselayout-0.1.0/usr/local/man' -> `share/man'
+`/tmp/xiange/pack/baselayout-0.1.0/usr/local/doc' -> `share/doc'
+`/tmp/xiange/pack/baselayout-0.1.0/usr/local/info' -> `share/info'
+# password/group
+Done
+Install files to / ...
+Install OK
+`/bin/bash' -> `/tools/bin/bash'
+`/bin/cat' -> `/tools/bin/cat'
+`/bin/echo' -> `/tools/bin/echo'
+`/bin/grep' -> `/tools/bin/grep'
+`/bin/pwd' -> `/tools/bin/pwd'
+`/bin/stty' -> `/tools/bin/stty'
+`/usr/bin/perl' -> `/tools/bin/perl'
+`/usr/lib/libgcc_s.so' -> `/tools/lib/libgcc_s.so'
+`/usr/lib/libgcc_s.so.1' -> `/tools/lib/libgcc_s.so.1'
+`/usr/lib/libstdc++.so' -> `/tools/lib/libstdc++.so'
+`/usr/lib/libstdc++.so.6' -> `/tools/lib/libstdc++.so.6'
+`/bin/sh' -> `bash'
+I have no name!:/# 
+
+}}}
+
+    * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包, 可以看到安装时间, 包大小, 和名称/版本.
+{{{
+I have no name!:/# gpkg -I
+2010-04-16 11:00:58      1K baselayout-0.1.0
+I have no name!:/# 
+
+}}}
     * 执行 gpkg -l baselayout列出包中所有文件。
+{{{
+I have no name!:/# gpkg -l baselayout
+d|      240| /usr
+l|       10| /usr/info
+l|        9| /usr/doc
+l|        9| /usr/man
+d|      180| /usr/share
+d|       40| /usr/share/zoneinfo
+d|       40| /usr/share/terminfo
+d|       40| /usr/share/misc
+d|      200| /usr/share/man
+d|       40| /usr/share/man/man8
+d|       40| /usr/share/man/man7
+d|       40| /usr/share/man/man6
+d|       40| /usr/share/man/man5
+d|       40| /usr/share/man/man4
+d|       40| /usr/share/man/man3
+d|       40| /usr/share/man/man2
+d|       40| /usr/share/man/man1
+d|       40| /usr/share/locale
+d|       40| /usr/share/info
+d|       40| /usr/share/doc
+d|      220| /usr/local
+l|       10| /usr/local/info
+l|        9| /usr/local/doc
+l|        9| /usr/local/man
+d|      180| /usr/local/share
+d|       40| /usr/local/share/zoneinfo
+d|       40| /usr/local/share/terminfo
+d|       40| /usr/local/share/misc
+d|      200| /usr/local/share/man
+d|       40| /usr/local/share/man/man8
+d|       40| /usr/local/share/man/man7
+d|       40| /usr/local/share/man/man6
+d|       40| /usr/local/share/man/man5
+d|       40| /usr/local/share/man/man4
+d|       40| /usr/local/share/man/man3
+d|       40| /usr/local/share/man/man2
+d|       40| /usr/local/share/man/man1
+d|       40| /usr/local/share/locale
+d|       40| /usr/local/share/info
+d|       40| /usr/local/share/doc
+d|       40| /usr/local/src
+d|       40| /usr/local/sbin
+d|       40| /usr/local/lib
+d|       40| /usr/local/include
+d|       40| /usr/local/bin
+d|       40| /usr/src
+d|       40| /usr/sbin
+d|       40| /usr/lib
+d|       40| /usr/include
+d|       40| /usr/bin
+d|       40| /tmp
+d|       40| /root
+d|      260| /var
+d|       60| /var/xiange
+d|       60| /var/xiange/db
+d|       60| /var/xiange/db/sys-apps
+d|       40| /var/xiange/db/sys-apps/baselayout
+d|       40| /var/local
+d|       80| /var/lib
+d|       40| /var/lib/locate
+d|       40| /var/lib/misc
+d|       40| /var/cache
+d|       40| /var/opt
+d|       40| /var/spool
+d|       40| /var/run
+d|       40| /var/mail
+d|       40| /var/log
+d|       40| /var/lock
+d|       40| /var/tmp
+d|       40| /srv
+d|       40| /sbin
+d|       80| /media
+d|       40| /media/cdrom
+d|       40| /media/floppy
+d|       40| /opt
+d|       40| /mnt
+d|       40| /lib
+d|       40| /home
+d|       80| /etc
+ |      193| /etc/group
+ |       87| /etc/passwd
+d|       40| /boot
+d|       40| /bin
+
+File: 2, Dir: 75, Link 6, Size: 1K
+}}}
+
+    * 可以用 gpkg -D baselayout 删除软件包, 但在进行下一步前, 要重新执行 gpkg -i baselayout 安装.
 
 ===3.7 安装linux-headers ===
+    * 脚本编写中...
 
     
 ===3.8 这时可以自由运行gpkg, 安装需要的软件包。===
