@@ -63,7 +63,13 @@ mount --bind /dev/shm/xgtmp /mnt/xg/tmp
 
 ===3.3 准备工具链 (/tools目录) ===
     * 可以直接下载工具链，在根目录解压，即可跳过此步骤。
-    * 若想自己重新编译工具链，下载编译脚本。
+    * 若想自己重新编译工具链，步骤如下:
+        # 下载编译脚本 xgstage0.tar.bz2
+        # 在工作目录解压, 得到xgstage0目录。进入后执行./download，脚本会自动下载所需软件包源码
+        # 如果失败，可以手动下载源码到工作目录的var/xiange/sources子目录, 如 /mnt/xg/var/xiange/sources/abc.tar.bz2. 在此运行./download, 会跳过已下载的软件包。
+        # 下载成功后，执行./build, 构建工具链。
+        # 完成后，会得到一个完整的工具链，在/mnt/xg/tools目录下。里面有记录文件installed.log, 记录了每个软件包的名称和安装时间。
+    
         
 
 ===3.4 chroot到工作环境 ===
