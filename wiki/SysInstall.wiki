@@ -63,8 +63,12 @@ mount --bind /dev/shm/xgtmp /mnt/xg/tmp
 
 ===3.3 准备工具链 (/tools目录) ===
     * 可以直接下载工具链，在根目录解压，即可跳过此步骤。[http://xiangelinux.googlecode.com/files/xgstage0-bin.tar.bz2 xgstage0-bin下载] 76MB
+        # MD5Sum: 3abcb26015006f5347f989113436addb  xgstage0-bin.tar.bz2
+        # sha256sum: 3f864041ba0084c666f1a33bf8df3d41e806e6bcce6a858816afeb60565e7553  xgstage0-bin.tar.bz2
+        # 解压到工作目录即可进入继续3.4
+
     * 若想自己重新编译工具链，步骤如下:
-        # 下载编译脚本 xgstage0.tar.bz2
+        # 下载编译脚本 [http://xiangelinux.googlecode.com/files/xgstage0-0.10.0.tar.bz2 xgstage0-0.10.0.tar.bz2] 7.8KB
         # 在工作目录解压, 得到xgstage0目录。进入后执行./download，脚本会自动下载所需软件包源码
         # 如果失败，可以手动下载源码到工作目录的var/xiange/sources子目录, 如 /mnt/xg/var/xiange/sources/abc.tar.bz2. 在此运行./download, 会跳过已下载的软件包。
         # 下载成功后，执行./build, 构建工具链。
