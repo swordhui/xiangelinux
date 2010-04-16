@@ -39,6 +39,24 @@ Mem:       2073332     375920    1697412          0      21224     159492
 Swap:     10738048          0   10738048
 }}}
 
+    * 有足够大空间的化， 可以在/etc/fstab里启动tmpfs
+{{{
+tmpfs           /dev/shm        tmpfs   defaults,size=10G       0       0
+}}}
+
+    * 挂载/dev/shm后，执行df -h命令， 可以看到:
+{{{
+sword@OPSvr ~ $df -h
+文件系统              容量  已用 可用 已用% 挂载点
+/dev/sdb7              97G  7.1G   85G   8% /
+/dev/sdb6             100G   25G   76G  25% /mnt/bak
+tmpfs                  10G  8.0K   10G   1% /dev/shm
+}}}
+
+
+
+
+
 
 
     * 3.2 编译工具链
