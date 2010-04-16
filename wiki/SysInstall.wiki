@@ -62,7 +62,7 @@ mount --bind /dev/shm/xgtmp /mnt/xg/tmp
 }}}
 
 ===3.3 准备工具链 (/tools目录) ===
-    * 可以直接下载工具链，在根目录解压，即可跳过此步骤。
+    * 可以直接下载工具链，在根目录解压，即可跳过此步骤。[http://xiangelinux.googlecode.com/files/xgstage0-bin.tar.bz2 xgstage0-bin下载] 76MB
     * 若想自己重新编译工具链，步骤如下:
         # 下载编译脚本 xgstage0.tar.bz2
         # 在工作目录解压, 得到xgstage0目录。进入后执行./download，脚本会自动下载所需软件包源码
