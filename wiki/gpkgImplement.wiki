@@ -52,6 +52,7 @@
 ||XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
 ||XGPATH_UNPACK||解压目标目录||"/tmp/xiange/sources"||||
 ||XGPATH_DEST||临时安装目录||"/tmp/xiange/pack/autoconf-2.6.8"||||
+||XGB_CONFIG||编译参数||CFLAGS="-march=native -mtune=native -O2" --prefix=/usr/||进行configure时, 可以指定$XGB_CONFIG做参数. 软件包特定的部分用 XGB_CONFIG+=" --pack=abc "实现.||
 
     gpkg在调用编译脚本前，会首先对这些变量赋值。
 <br>
