@@ -415,7 +415,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
     * 编译完成后, gpkg会将bzImage和config安装到/boot目录, 模块安装到/lib/modules目录, 并生成内核文件列表信息.
     * 有此可见, 编译内核前需要先编辑/boot/config-xiange文件, 你可以用各种方法编辑, 使它适用于你的系统.
 
-===3.9 准备启动===
+===3.10 准备启动===
     * 设置密码，
     * 修改/etc/fstab
     * 安装GRUB2 或 GRUB
