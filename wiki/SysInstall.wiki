@@ -27,7 +27,7 @@
 
 ===3.2 准备交换分区 ===
     * 弦歌系统基于源码安装，有大量的编译工作，如果有多于1GB的内存, 且启动tmpfs, 编译工作在tmpfs(可以理解为内存)中完成，可以大大提高编译速度，延长硬盘使用寿命。
-    * tmpfs需要5G左右，如果你有2G内存，再加上3G的交换分区即可。
+    * tmpfs需要3G左右，如果你有2G内存，再加上1G的交换分区即可。
     * 用fdisk/cfdisk创建一个交换分区，然后用mkswap/swapon命令启动。
     * 也可以用文件代替交换分区，只是性能不如直接使用交换分区。
     * 交换分区启动后， 可以执行free命令看看容量:
@@ -68,12 +68,13 @@ mount --bind /dev/shm/xgtmp /mnt/xg/tmp
         # 解压到工作目录即可进入继续3.4
 
     * 若想自己重新编译工具链，步骤如下:
-        # 下载编译脚本 [http://xiangelinux.googlecode.com/files/xgstage0-0.10.0.tar.bz2 xgstage0-0.10.0.tar.bz2] 7.8KB
-        # 在工作目录解压, 得到xgstage0目录。进入后执行./download，脚本会自动下载所需软件包源码
-        # 如果失败，可以手动下载源码到工作目录的var/xiange/sources子目录, 如 /mnt/xg/var/xiange/sources/abc.tar.bz2. 在此运行./download, 会跳过已下载的软件包。
+        # 下载编译脚本 [http://xiangelinux.googlecode.com/files/xgstage0-0.10.4.tar.bz2 xgstage0-0.10.4.tar.bz2] 7.8KB
+        # 在工作目录解压, 得到xgstage0-0.10.4目录。进入后执行./download，脚本会自动下载所需软件包源码
+        # 如果失败，可以手动下载源码到工作目录的var/xiange/sources子目录, 如 /mnt/xg/var/xiange/sources/abc.tar.bz2. 再次运行./download, 会跳过已下载的软件包。
         # 下载成功后，执行./build, 构建工具链。
         # 完成后，会得到一个完整的工具链，在/mnt/xg/tools目录下。里面有记录文件installed.log, 记录了每个软件包的名称和安装时间。
         # 其实..也不必完全等代./download下载完毕再执行./build. 下载完gcc后就可以执行了，然后边下载边编译，节省时间。
+        # 彻底编译完成后, 可以删除xgstage0-0.10.4目录
 
     安装工具列表: (名称-版本/安装时间, 在/mnt/xg/tools/installed.log)
 {{{
@@ -108,20 +109,32 @@ util-linux-ng-2.15.1 2010-04-16 10:16:52
 zlib-1.2.3 2010-04-16 10:16:57
 git-1.6.3.3 2010-04-16 10:18:13
 wget-1.11.4 2010-04-16 10:18:34
-gpkg-0.10.1 2010-04-16 10:18:34
+gpkg-0.10.4 2010-04-16 10:18:34
 }}}
-    gpkg-0.10.1 可以从本站下载。
+    gpkg-0.10.4 可以从本站下载。
+
 
     
         
 
 ===3.4 chroot到工作环境 ===
     * 拷贝/etc/resolv.conf 到/mnt/xg/etc目录, 保证chroot后可以访问网络。
+    * 创建两个必需的设备文件: console和null. mknode -m 600 console c 5 1 和 mknode -m 666 null 1 3
     * 可以将一下命令写入脚本 doxg, 以后每次执行chroot时都需要做这些..
 {{{
        
         mount /dev/XXXX /mnt/xg
 
+        #copy resolv.conf
+        [ -d /mnt/xg/etc ] || mkdir /mnt/xg/etc
+        [ -f /mnt/xg/etc/resolv.conf ] || cp /etc/resolv.conf /mnt/xg/etc
+
+        #create console and null
+        [ -d /mnt/xg/dev ] || mkdir /mnt/xg/dev
+        [ -f /mnt/xg/dev/console ] || mknode -m 600 /mnt/xg/dev/console c 5 1
+        [ -f /mnt/xg/dev/null ] || mknode -m 666 /mnt/xg/dev/null c 1 3
+
+        #mount proc,sys,dev
         mkdir -p /mnt/xg/proc
         mkdir -p /mnt/xg/sys
         mkdir -p /mnt/xg/dev
@@ -129,14 +142,11 @@ gpkg-0.10.1 2010-04-16 10:18:34
         mount -t sysfs none /mnt/xg/sys
         mount --bind /dev /mnt/xg/dev
 
-        #copy resolv.conf
-        [ -d /mnt/xg/etc ] || mkdir /mnt/xg/etc
-        [ -f /mnt/xg/etc/resolv.conf ] || cp /etc/resolv.conf /mnt/xg/etc
 
-
-        #tmpfs 如果编译tools前已经挂载了，这步可以省掉
+        #tmp fs
         mkdir /dev/shm/xgtmp
         chmod 1777 /dev/shm/xgtmp
+        mkdir /mnt/xg/tmp
         mount --bind /dev/shm/xgtmp /mnt/xg/tmp
 
         echo "xg: Mount OK"
@@ -144,13 +154,13 @@ gpkg-0.10.1 2010-04-16 10:18:34
         chroot /mnt/xg /tools/bin/env -i \
                 HOME=/root TERM="$TERM" PS1='\u:\w\$ ' \
                 PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \                
-               /tools/bin/bash
+               /tools/bin/bash +h
 }}}
 
       成功后，能看到如下信息:
 {{{
 I have no name!:/# ls
-dev  lost+found  proc  sys  tmp  tools	var  xgstage0
+dev  lost+found  proc  sys  tmp  tools	var  xgstage0-0.10.4
 I have no name!:/# 
 
 }}}
@@ -178,7 +188,7 @@ I have no name!:/etc#
 {{{
 I have no name!:/var/xiange/xglibs# gpkg -s base
 * sys-apps/baselayout
-	Available:	 0.1.0
+	Available:	 0.2.0
 	Installed:	 None
 
 search base, result count 1
@@ -188,24 +198,24 @@ I have no name!:/var/xiange/xglibs#
     * 执行gpkg -i baselayout 安装baselayout, 系统会自动下载安装,信息如下:
 {{{
 I have no name!:/# gpkg -i baselayout
-Begin download baselayout-0.1.0...
-downloading from http://xiangelinux.googlecode.com/files/baselayout-0.1.0.tar.bz2, retry 0...
---2010-04-16 11:00:57--  http://xiangelinux.googlecode.com/files/baselayout-0.1.0.tar.bz2
+Begin download baselayout-0.2.0...
+downloading from http://xiangelinux.googlecode.com/files/baselayout-0.2.0.tar.bz2, retry 0...
+--2010-04-16 11:00:57--  http://xiangelinux.googlecode.com/files/baselayout-0.2.0.tar.bz2
 Resolving xiangelinux.googlecode.com... 72.14.203.82
 Connecting to xiangelinux.googlecode.com|72.14.203.82|:80... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 890 [application/x-bzip2]
-Saving to: `/var/xiange/sources/baselayout-0.1.0.tar.bz2.tmp'
+Saving to: `/var/xiange/sources/baselayout-0.2.0.tar.bz2.tmp'
 
 100%[========================================>] 890         --.-K/s   in 0.002s  
 
-2010-04-16 11:00:57 (418 KB/s) - `/var/xiange/sources/baselayout-0.1.0.tar.bz2.tmp' saved [890/890]
+2010-04-16 11:00:57 (418 KB/s) - `/var/xiange/sources/baselayout-0.2.0.tar.bz2.tmp' saved [890/890]
 
 Download OK
 [Unpack] dir=/tmp/xiange/sources
 `/bin/sh' -> `/tools/bin/bash'
 # make all directorys.
-Install to /tmp/xiange/pack/baselayout-0.1.0
+Install to /tmp/xiange/pack/baselayout-0.2.0
 `/tmp/xiange/pack/baselayout-0.1.0/usr/man' -> `share/man'
 `/tmp/xiange/pack/baselayout-0.1.0/usr/doc' -> `share/doc'
 `/tmp/xiange/pack/baselayout-0.1.0/usr/info' -> `share/info'
@@ -235,7 +245,7 @@ I have no name!:/#
     * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包, 可以看到安装时间, 包大小, 和名称/版本.
 {{{
 I have no name!:/# gpkg -I
-2010-04-16 11:00:58      1K baselayout-0.1.0
+2010-04-16 11:00:58      1K baselayout-0.2.0
 I have no name!:/# 
 
 }}}
@@ -330,19 +340,84 @@ File: 2, Dir: 75, Link 6, Size: 1K
 }}}
 
     * 可以用 gpkg -D baselayout 删除软件包, 但在进行下一步前, 要重新执行 gpkg -i baselayout 安装.
+    * 包安装完毕后, 会自动生成二进制包(*.xgp), 放在/var/xiange/packages目录下. 如baselayout.xgp. 下次不想编译时, 可以直接安装二进制包: gpkg -ib /var/xiange/packages/baselayout-0.2.0.xgp
 
 ===3.7 安装linux-headers ===
-    * 脚本编写中...
+    * gpkg -i linux-headers
 
     
 ===3.8 这时可以自由运行gpkg, 安装需要的软件包。===
-    * 每装完一个包，都可以用qpkg 查看安装信息，可以对系统了如指掌。
-    *继续安装，知道整个系统可以脱离/tools直接运行。
+    安装的列表如下:
+{{{
+     1  baselayout-0.2.0
+     2  man-pages-3.24
+     3  linux-headers-2.6.32.11
+     4  glibc-2.10.1
+     5  gmp-4.3.2
+     6  mpfr-2.4.2
+     7  gcc-4.4.3
+     8  berkeley-db-4.7.25
+     9  sed-4.2.1
+    10  pkg-config-0.23
+    11  ncurses-5.7
+    12  util-linux-ng-2.17.2
+    13  e2fsprogs-1.41.11
+    14  coreutils-8.5
+    15  iana-etc-2.30
+    16  m4-1.4.14
+    17  bison-2.4.2
+    18  procps-3.2.8
+    19  grep-2.6.3
+    20  readline-6.1
+    21  bash-4.1
+    22  libtool-2.2.6
+    23  gdbm-1.8.3
+    24  inetutils-1.7
+    25  zlib-1.2.5
+    26  perl-5.12.0
+    27  autoconf-2.65
+    28  automake-1.11.1
+    29  bzip2-1.0.5
+    30  diffutils-2.9
+    31  gawk-3.1.7
+    32  findutils-4.4.2
+    33  flex-2.5.35
+    34  gettext-0.17
+    35  groff-1.20.1
+    36  grub-1.98
+    37  gzip-1.4
+    38  iproute2-2.6.33
+    39  kbd-1.15.2
+    40  less-436
+    41  make-3.81
+    42  man-db-2.5.7
+    43  module-init-tools-3.11.1
+    44  patch-2.6.1
+    45  psmisc-22.11
+    46  shadow-4.1.4.2
+    47  file-5.04
+    48  sysklogd-1.5
+    49  sysvinit-2.86
+    50  tar-1.23
+    51  texinfo-4.13
+    52  udev-153
+    53  python-2.6.2
+    54  git-1.7.0.6
+    55  gpkg-0.10.4
+    56  vim-7.2.411
+    
+
+}}}
+
+===3.9 安装内核 ===
+    * 内核也通过gpkg安装, 前提是先准备内核配置文件. 默认内核配置文件被baselayout包放在/boot/config-xiange文件.
+    * gpkg -i linux-kernel 命令启动内核编译, gpkg自动解压内核到临时目录, 并将/boot/config-xiange文件拷贝到内核源码目录,改名为.config, 然后启动编译过程 (make && make modules)
+    * 编译完成后, gpkg会将bzImage和config安装到/boot目录, 模块安装到/lib/modules目录, 并生成内核文件列表信息.
+    * 有此可见, 编译内核前需要先编辑/boot/config-xiange文件, 你可以用各种方法编辑, 使它适用于你的系统.
 
 ===3.9 准备启动===
     * 设置密码，
-    * 修改fstab
-    * 编译内核，
+    * 修改/etc/fstab
     * 安装GRUB2 或 GRUB
     * 重新启动
 
@@ -353,7 +428,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
 
 ||情景||简介||
 ||Stage0||完全从0开始安装，只需下载安装脚本，指定安装的目的分区(或目的目录),运行脚本即可。<br>脚本自动下载所需软件包，从头构建工具链，构建根系统，安装软件包，直至系统完成。||
-||Stage1||比Stage0简化些，不需在本地构建工具链。预下载内容包括工具链和安装脚本。<br>指定安装的目的分区(或目的目录),运行脚本。<br>脚本自动下载所需软件包，构建根系统，安装软件包，直至系统完成。||
+||Stage1||比Stage0简化些，不需在本地构建工具链。预下载内容包括工具链和安装脚本。<br>指定安装的目的分区(或目的目录),运行脚本。<br>脚本自动下载所需软件包，构建根系统，安装软件包，直至系统完成。<br>启动命令: gpkg stage1 ||
 ||Stage2||比Stage1简化些，不需要额外的工具链。预下载内容包括跟文件系统，已预装好编译环境和包管理系统。<br>用户只需要在此基础上, 调用gpkg安装自己喜欢的软件包即可。||
 ||Stage3||Stage2的扩充，包括X系统, gtk2, qt4, fvwm, firefox等预装软件包。||
 
