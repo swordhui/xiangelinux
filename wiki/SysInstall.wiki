@@ -12,10 +12,12 @@
     
 
 = 2.安装方式 =
-弦歌Linux支持2种安装方式: 手动安装和自动脚本安装。无论何种方式，都调用弦歌的包管理系统gpkg, 请参见文档[xgpkg].
+弦歌Linux支持2种安装方式: 手动安装和自动脚本安装。无论何种方式，都调用弦歌的包管理系统gpkg, 请参见文档[xgpkg].<br>
+也可以采用混合方式安装，即先手动安装，了解弦歌的安装方式。然后再启动自动安装，已经安装过的包会自动跳过。
 
 = 3.手动安装 =
-手动安装即通过手动的方式安装所有软件包，如先调用gpkg -i linux-header 安装所有Linux头文件， 再调用gpkg -i glibc 安装C库， 再调用gpkg -i bin-utils安装二进制工具链。安装的步骤和LFS手册类似，只是细节交给gpkg处理。
+手动安装即通过手动的方式安装所有软件包，如先调用gpkg -i linux-header 安装所有Linux头文件， 再调用gpkg -i glibc 安装C库， 再调用gpkg -i bin-utils安装二进制工具链。安装的步骤和LFS手册类似，只是细节交给gpkg处理。<br>
+这样可以让用户充分了解系统结构，对系统组成了如指掌。
 
 具体步骤如下:
 ===3.1 准备主分区 ===
@@ -53,9 +55,9 @@ wget URL
 tar xf xgstage0-bin-0.10.5.tar.bz2
 }}}
 
-    * 若想自己重新编译工具链，请参加稳定[build_tools]
+    * 若想自己重新编译tools目录，请参见文档[build_tools]
        
-    安装工具列表: (名称-版本/安装时间, 在/mnt/xg/tools/installed.log)
+    tools目录工具列表: (名称-版本/安装时间, 在/mnt/xg/tools/installed.log)
 {{{
 binutils-2.19.1 2010-04-16 15:46:44
 gcc-4.4.0 2010-04-16 17:09:43
@@ -103,7 +105,7 @@ XGSvr xg #gpkg chroot /mnt/xg
 /mnt/xg check OK
 I have no name!:/#
 }}}
-      gpkg 会做一些
+      gpkg的chroot会挂载 tmp,proc,sys,dev目录，并拷贝/etc/resolv.conf文件保证chroot后能正常上网。最后执行真正的chroot命令切换到工作目录。
 
       成功后，能看到如下信息:
 {{{
@@ -126,22 +128,24 @@ remote: Total 26 (delta 5), reused 0 (delta 0)
 Receiving objects: 100% (26/26), done.
 Resolving deltas: 100% (5/5), done.
 I have no name!:/etc# 
-
 }}}
+    gpkg --sync 会利用git下载位于github的软件包脚本库，防止/var/xiange/xglibs目录。
 
     * 如果失败,是网络连接问题,请检查网络连接和/etc/resolv.conf
 
 ===3.6 安装baselayout ===
     * 执行gpkg -s base 检查能否从库中找到baselayout
 {{{
-I have no name!:/var/xiange/xglibs# gpkg -s base
+I have no name!:/# gpkg -s base
 * sys-apps/baselayout
-	Available:	 0.2.0
+	Available: 0.2.0
 	Installed:	 None
+	Desc.    : Base layout for Xiange Linux
+	Homepage : http://code.google.com/p/xiangelinux
 
-search base, result count 1
-I have no name!:/var/xiange/xglibs# 
+I have no name!:/# 
 }}}
+    * gpkg -s 可以指定部分包文件名进行搜索。
 
     * 执行gpkg -i baselayout 安装baselayout, 系统会自动下载安装,信息如下:
 {{{
