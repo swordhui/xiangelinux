@@ -104,7 +104,7 @@ I have no name!:/#
       成功后，能看到如下信息:
 {{{
 I have no name!:/# ls
-dev  lost+found  proc  sys  tmp  tools	var  xgstage0-0.10.4
+dev  lost+found  proc  sys  tmp  tools	var  
 I have no name!:/# 
 
 }}}
@@ -132,7 +132,7 @@ I have no name!:/etc#
 {{{
 I have no name!:/# gpkg -s base
 * sys-apps/baselayout
-	Available: 0.2.0
+	Available: 0.2.1
 	Installed:	 None
 	Desc.    : Base layout for Xiange Linux
 	Homepage : http://code.google.com/p/xiangelinux
