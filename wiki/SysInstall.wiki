@@ -49,12 +49,12 @@ tmpfs                  10G  588K   10G   1% /dev/shm
     * tmpfs需要3G左右，如果空间不够，需要增加swap空间。
     
 ===3.3 准备工具链 (/tools目录) ===
-    * 可以直接下载工具链，在根目录解压。[http://xiangelinux.googlecode.com/files/tools-0.10.6.tar.bz2 tools-0.10.6.tar.bz2下载] 75MB
+    * 可以直接下载工具链，在根目录解压。[http://xiangelinux.googlecode.com/files/tools-bin-i686-0.10.7.tar.bz2 tools-0.10.7.tar.bz2下载] 75MB
         # 解压到工作目录即可进入继续3.4，命令如下:
 {{{
 cd /mnt/xg/
-wget http://xiangelinux.googlecode.com/files/tools-0.10.6.tar.bz2
-tar xf tools-0.10.6.tar.bz2
+wget http://xiangelinux.googlecode.com/files/tools-bin-i686-0.10.7.tar.bz2
+tar xf tools-bin-i686-0.10.7.tar.bz2
 }}}
 
     * 若想自己重新编译tools目录，请参见文档[build_tools]
@@ -92,7 +92,7 @@ util-linux-ng-2.15.1 2010-04-16 10:16:52
 zlib-1.2.3 2010-04-16 10:16:57
 git-1.6.3.3 2010-04-16 10:18:13
 wget-1.11.4 2010-04-16 10:18:34
-gpkg-0.10.6 2010-05-10 01:27:42
+gpkg-0.10.7 2010-05-10 01:27:42
 }}}
         
 
