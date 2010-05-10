@@ -99,11 +99,13 @@ gpkg-0.10.6 2010-05-10 01:27:42
 ===3.4 chroot到工作环境 ===
       在工作目录下执行gpkg的chroot子命令，代码如下:
 {{{
-XGSvr xg #gpkg chroot /mnt/xg
+bash tools/bin/gpkg -chroot /mnt/xg
 /mnt/xg check OK
 I have no name!:/#
 }}}
-      gpkg的chroot会挂载 tmp,proc,sys,dev目录，并拷贝/etc/resolv.conf文件保证chroot后能正常上网。最后执行真正的chroot命令切换到工作目录。
+    gpkg的chroot会挂载 tmp,proc,sys,dev目录，并拷贝/etc/resolv.conf文件保证chroot后能正常上网。最后执行真正的chroot命令切换到工作目录。<br>
+    注意第一次运行gpkg需要指定bash环境，否则默认从chroot后的环境找bash, 会找不到。
+   
 
       成功后，能看到如下信息:
 {{{
@@ -148,24 +150,24 @@ I have no name!:/#
     * 执行gpkg -i baselayout 安装baselayout, 系统会自动下载安装,信息如下:
 {{{
 I have no name!:/# gpkg -i baselayout
-Begin download baselayout-0.2.0...
-downloading from http://xiangelinux.googlecode.com/files/baselayout-0.2.0.tar.bz2, retry 0...
---2010-04-16 11:00:57--  http://xiangelinux.googlecode.com/files/baselayout-0.2.0.tar.bz2
+Begin download baselayout-0.2.1...
+downloading from http://xiangelinux.googlecode.com/files/baselayout-0.2.1.tar.bz2, retry 0...
+--2010-04-16 11:00:57--  http://xiangelinux.googlecode.com/files/baselayout-0.2.1.tar.bz2
 Resolving xiangelinux.googlecode.com... 72.14.203.82
 Connecting to xiangelinux.googlecode.com|72.14.203.82|:80... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 890 [application/x-bzip2]
-Saving to: `/var/xiange/sources/baselayout-0.2.0.tar.bz2.tmp'
+Saving to: `/var/xiange/sources/baselayout-0.2.1.tar.bz2.tmp'
 
 100%[========================================>] 890         --.-K/s   in 0.002s  
 
-2010-04-16 11:00:57 (418 KB/s) - `/var/xiange/sources/baselayout-0.2.0.tar.bz2.tmp' saved [890/890]
+2010-04-16 11:00:57 (418 KB/s) - `/var/xiange/sources/baselayout-0.2.1.tar.bz2.tmp' saved [890/890]
 
 Download OK
 [Unpack] dir=/tmp/xiange/sources
 `/bin/sh' -> `/tools/bin/bash'
 # make all directorys.
-Install to /tmp/xiange/pack/baselayout-0.2.0
+Install to /tmp/xiange/pack/baselayout-0.2.1
 `/tmp/xiange/pack/baselayout-0.1.0/usr/man' -> `share/man'
 `/tmp/xiange/pack/baselayout-0.1.0/usr/doc' -> `share/doc'
 `/tmp/xiange/pack/baselayout-0.1.0/usr/info' -> `share/info'
