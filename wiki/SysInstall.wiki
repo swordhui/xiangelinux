@@ -191,7 +191,7 @@ I have no name!:/#
     * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包, 可以看到安装时间, 包大小, 和名称/版本.
 {{{
 I have no name!:/# gpkg -I
-2010-04-16 11:00:58      1K baselayout-0.2.0
+2010-04-16 11:00:58      1K baselayout-0.2.1
 I have no name!:/# 
 
 }}}
@@ -286,7 +286,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
 }}}
 
     * 可以用 gpkg -D baselayout 删除软件包, 但在进行下一步前, 要重新执行 gpkg -i baselayout 安装.
-    * 包安装完毕后, 会自动生成二进制包(*.xgp), 放在/var/xiange/packages目录下. 如baselayout.xgp. 下次不想编译时, 可以直接安装二进制包: gpkg -ib /var/xiange/packages/baselayout-0.2.0.xgp
+    * 包安装完毕后, 会自动生成二进制包(*.xgp), 放在/var/xiange/packages目录下. 如baselayout.xgp. 下次不想编译时, 可以直接安装二进制包: gpkg -ib /var/xiange/packages/baselayout-0.2.1.xgp
     * 安装完baselayout后， 用gpkg --unchroot /mnt/xg, 然后重新执行gpkg -chroot /mnt/xg, 既可以去除"I have no name"的提示。
     * 文件信息和configure/make check的屏幕记录放在/var/xiange/db/目录下。注意有的软件包没有config过程和make check 过程。
 
@@ -297,7 +297,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
 ===3.8 这时可以自由运行gpkg, 安装需要的软件包。===
     安装的列表如下:
 {{{
-     1	baselayout-0.2.0
+     1	baselayout-0.2.1
      2	man-pages-3.24
      3	linux-headers-2.6.32.11
      4	glibc-2.10.1
