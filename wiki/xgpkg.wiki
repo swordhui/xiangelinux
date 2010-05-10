@@ -113,7 +113,7 @@ gpkg从0.10.7开始，先检查/etc/xgparas是否存在，如果存在，使用�
 如想修改编译参数， 可以用命令:
 {{{
 gpkg -info > /etc/xgparas
-}}
+}}}
 
 然后修改 /etc/xgparas文件，如将native改为i686, 这样软件包可以在大多数CPU上运行(注意会降低优化性能)<br>
 修改完成后再次运行gpkg -info, 可以看到修改已生效:
