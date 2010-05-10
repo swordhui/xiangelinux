@@ -98,7 +98,7 @@ autoconf-2.63-r1 <br>
 ||示例||gpkg -info||
 ||功能||显示目前gpkg使用编译参数||
 
-gpkt从0.10.7开始，先检查/etc/xgparas是否存在，如果存在，使用里面的参数作为编译参数, 否则使用默认优化参数。<br>
+gpkg从0.10.7开始，先检查/etc/xgparas是否存在，如果存在，使用里面的参数作为编译参数, 否则使用默认优化参数。<br>
 默认优化参数为"-march=native -mtune=native -O2 -fomit-frame-pointer -pipe". native是很强悍的优化参数，完全针对当前CPU类型做优化，是软件编译达到极限性能。<br>
 如想修改编译参数， 可以用命令:
 {{{
@@ -116,4 +116,3 @@ XG_I18N="en zh_CN"
 }}}
 
 XG_I18N控制允许那些本地化字符串安装在/usr/share/locale目录下。默认允许英文和中文资源安装，其他的在安装前剔除。
-
