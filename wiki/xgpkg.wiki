@@ -92,3 +92,28 @@ autoconf-2.63-r1 <br>
 ||示例||gpkg --sync||
 ||功能||用git同步软件包的编译脚本库||
 ||结果||返回0表示成功, 返回1表示git失败||
+
+=13. 显示/修改优化参数=
+||命令格式||gpkg -info ||
+||示例||gpkg -info||
+||功能||显示目前gpkg使用编译参数||
+
+gpkt从0.10.7开始，先检查/etc/xgparas是否存在，如果存在，使用里面的参数作为编译参数, 否则使用默认优化参数。<br>
+默认优化参数为"-march=native -mtune=native -O2 -fomit-frame-pointer -pipe". native是很强悍的优化参数，完全针对当前CPU类型做优化，是软件编译达到极限性能。<br>
+如想修改编译参数， 可以用命令:
+{{{
+gpkg -info > /etc/xgparas
+}}
+
+然后修改 /etc/xgparas文件，如将native改为i686, 这样软件包可以在大多数CPU上运行(注意会降低优化性能)<br>
+修改完成后再次运行gpkg -info, 可以看到修改已生效:
+{{{
+XGSvr xg #gpkg -info
+CC="gcc"
+CFLAGS="-march=i686 -mtune=i686 -O2 -fomit-frame-pointer -pipe"
+CPPFLAGS="$CFLAGS"
+XG_I18N="en zh_CN"
+}}}
+
+XG_I18N控制允许那些本地化字符串安装在/usr/share/locale目录下。默认允许英文和中文资源安装，其他的在安装前剔除。
+
