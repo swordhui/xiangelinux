@@ -22,7 +22,7 @@
 具体步骤如下:
 ===3.0 宿主Linux系统 ===
     所谓宿主，就是安装时机器上运行的系统。利用这个系统运行构建工具，诞生新的系统。这和哺乳动物的分娩过程很类似...<br>
-    弦歌可以使用任何带有编译环境的Linux系统做宿主系统. 如果目前机器上没有带编译环境的Linux系统，推荐使用[http://www.knopper.net/knoppix/ Knoppix]的LiveCD. 未来可以使用本站的LiveUSB和LiveCD (构建中... Help)
+    弦歌可以使用任何带有编译环境的Linux系统做宿主系统. 如果目前机器上安装的系统不能满足，推荐使用[http://www.knopper.net/knoppix/ Knoppix]的LiveCD. 未来可以使用本站的LiveUSB和LiveCD (构建中... Help)
 
 ===3.1 准备主分区 ===
 
