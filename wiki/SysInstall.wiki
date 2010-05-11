@@ -104,7 +104,7 @@ bash tools/bin/gpkg -chroot /mnt/xg
 I have no name!:/#
 }}}
     gpkg的chroot会挂载 tmp,proc,sys,dev目录，并拷贝/etc/resolv.conf文件保证chroot后能正常上网。最后执行真正的chroot命令切换到工作目录。<br>
-    注意第一次运行gpkg需要指定bash环境，否则默认从chroot后的环境找bash, 会找不到。
+    注意在宿主系统中运行gpkg需要指定bash，否则默认从/tools/bin目录找bash, 会找不到。chroot后运行gpkg则没有这个问题。
    
 
       成功后，能看到如下信息:
@@ -293,15 +293,14 @@ File: 2, Dir: 75, Link 6, Size: 1K
 
     * 可以用 gpkg -D baselayout 删除软件包, 但在进行下一步前, 要重新执行 gpkg -i baselayout 安装.
     * 包安装完毕后, 会自动生成二进制包(*.xgp), 放在/var/xiange/packages目录下. 如baselayout.xgp. 下次不想编译时, 可以直接安装二进制包: gpkg -ib /var/xiange/packages/baselayout-0.2.1.xgp
-    * 安装完baselayout后， 用gpkg --unchroot /mnt/xg, 然后重新执行gpkg -chroot /mnt/xg, 既可以去除"I have no name"的提示。
+    * 安装完baselayout后， 用gpkg --unchroot /mnt/xg, 然后重新执行bash tools/bin/gpkg -chroot /mnt/xg, 既可以去除"I have no name"的提示。
     * 文件信息和configure/make check的屏幕记录放在/var/xiange/db/目录下。注意有的软件包没有config过程和make check 过程。
 
-===3.7 安装linux-headers ===
-    * gpkg -i linux-headers
-
     
-===3.8 这时可以自由运行gpkg, 安装需要的软件包。===
-    安装的列表如下:
+===3.7 这时可以自由运行gpkg, 安装需要的软件包。===
+    安装的列表如下:<br>
+    注意：随时可以从手动安装切换到自带安装, 用命令 gpkg stage1 即可。gpkg从/var/xiange/xglibs/stages/stage1文件读取待安装包列表，逐一安装。已经手动安装过的包会自动跳过。
+
 {{{
      1	baselayout-0.2.1
      2	man-pages-3.24
@@ -358,18 +357,19 @@ File: 2, Dir: 75, Link 6, Size: 1K
     53	texinfo-4.13
     54	udev-153
     55	python-2.6.2
-    56	linux-kernel-2.6.32.11
+    56	linux-kernel-2.6.32.11 (参见下节说明)
     57	git-1.7.0.6
     58	vim-7.2.411
 }}}
 
-===3.9 安装内核 ===
-    * 内核也通过gpkg安装, 前提是先准备内核配置文件. 默认内核配置文件被baselayout包放在/boot/config-xiange文件.
-    * gpkg -i linux-kernel 命令启动内核编译, gpkg自动解压内核到临时目录, 并将/boot/config-xiange文件拷贝到内核源码目录,改名为.config, 然后启动编译过程 (make && make modules)
+===3.8 安装内核 ===
+    * 内核也通过gpkg安装, 前提是先准备内核配置文件. 默认内核配置文件是/boot/config-xiange.
+    * 这个文件由baselayout包创建，缺省是一个通用内核的.config配置文件。
+    * 用户可以将适用于自己系统的.config文件覆盖缺省文件， 运行gpkg -i linux-kernel 命令启动内核编译, gpkg自动解压内核到临时目录, 并将/boot/config-xiange文件拷贝到内核源码目录,改名为.config, 然后启动编译过程 (make && make modules)
     * 编译完成后, gpkg会将bzImage和config安装到/boot目录, 模块安装到/lib/modules目录, 并生成内核文件列表信息.
-    * 有此可见, 编译内核前需要先编辑/boot/config-xiange文件, 你可以用各种方法编辑, 使它适用于你的系统.
+    * 用这种方法，内核文件和模块也会有记录，比直接安装内核要好。
 
-===3.10 准备启动===
+===3.9 准备启动===
     * 设置密码，
     * 修改/etc/fstab
     * 安装GRUB2 或 GRUB
