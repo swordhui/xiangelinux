@@ -129,7 +129,7 @@ Receiving objects: 100% (26/26), done.
 Resolving deltas: 100% (5/5), done.
 I have no name!:/etc# 
 }}}
-    gpkg --sync 会利用git下载位于github的软件包脚本库，防止/var/xiange/xglibs目录。
+    gpkg --sync 会利用git下载位于github的软件包脚本库，放入/var/xiange/xglibs目录。
 
     * 如果失败,是网络连接问题,请检查网络连接和/etc/resolv.conf
 
