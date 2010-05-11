@@ -299,7 +299,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
     
 ===3.7 这时可以自由运行gpkg, 安装需要的软件包。===
     安装的列表如下:<br>
-    注意：随时可以从手动安装切换到自带安装, 用命令 gpkg stage1 即可。gpkg从/var/xiange/xglibs/stages/stage1文件读取待安装包列表，逐一安装。已经手动安装过的包会自动跳过。
+    注意：随时可以从手动安装切换到自动安装, 用命令 gpkg stage1 即可。gpkg从/var/xiange/xglibs/stages/stage1文件读取待安装包列表，逐一安装。已经手动安装过的包会自动跳过。
 
 {{{
      1	baselayout-0.2.1
