@@ -3,7 +3,7 @@
 在构建的过程中，从网络上发现了LinuxSir的LFS论坛，于是加入其中。<br>
 
 从此后就使用从头构建LFS系统。后来为了加入包管理器，移植了Gentoo的Portage系统, 但用着很不爽，因为Portage系统庞大很难掌控，于是产生了想做一个包管理器的想法。在LinuxSir发了几篇帖子，请参见:<br>
-[http://www.linuxsir.org/bbs/thread356491.html 求助:一个获取文件信息的C程序］<br>
+[http://www.linuxsir.org/bbs/thread356491.html 一个获取文件信息的C程序］<br>
 [http://www.linuxsir.org/bbs/thread356497.html 标题: Help: 分解文件名的Bash函数] <br>
 [http://www.linuxsir.org/bbs/thread366340.html LFS下滚动升级(rolling upgrade)怎么实现]<br>
 
