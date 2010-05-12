@@ -300,6 +300,7 @@ File: 2, Dir: 75, Link 6, Size: 1K
 ===3.7 这时可以自由运行gpkg, 安装需要的软件包。===
     安装的列表如下:<br>
     注意：随时可以从手动安装切换到自动安装, 用命令 gpkg stage1 即可。gpkg从/var/xiange/xglibs/stages/stage1文件读取待安装包列表，逐一安装。已经手动安装过的包会自动跳过。
+    注意2: 如果gmp因为64bit的问题configure失败，执行export ABI=32, 再次gpkg -i gmp 或gpkg stage1即可。
 
 {{{
      1	baselayout-0.2.1
@@ -368,6 +369,14 @@ File: 2, Dir: 75, Link 6, Size: 1K
     * 用户可以将适用于自己系统的.config文件覆盖缺省文件， 运行gpkg -i linux-kernel 命令启动内核编译, gpkg自动解压内核到临时目录, 并将/boot/config-xiange文件拷贝到内核源码目录,改名为.config, 然后启动编译过程 (make && make modules)
     * 编译完成后, gpkg会将bzImage和config安装到/boot目录, 模块安装到/lib/modules目录, 并生成内核文件列表信息.
     * 用这种方法，内核文件和模块也会有记录，比直接安装内核要好。
+    * 内核安装完毕后会从/tmp/xiange/sources目录清除。如果想编译依赖于内核源码的模块，需要先准备内核源码，步骤如下:
+{{{
+    mkdir -p /tmp/xiange/sources
+    cd /tmp/xiange/sources
+    tar xf /var/xiange/sources/linux-2.XXXX.tar.bz2
+    cp /boot/config-xiange linux-2XXX/.config
+}}}
+    然后再编译模块就可以了。
 
 ===3.9 准备启动===
     * 设置密码，
