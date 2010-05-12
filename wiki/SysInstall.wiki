@@ -382,6 +382,29 @@ File: 2, Dir: 75, Link 6, Size: 1K
     * 设置密码，
     * 修改/etc/fstab
     * 安装GRUB2 或 GRUB
+        # GRUB2的安装十分简单， 执行 grub-install 设备名即可。如系统在/dev/sda, 执行 
+{{{
+    grub-install /dev/sda
+}}}
+
+        # 加入配置文件到 /boot/grub/grub.cfg
+{{{
+
+menuentry "Xiange-2.6.32.11" {
+    set root=(hd0,8)
+    linux /boot/vmlinuz-2.6.32.11 root=/dev/sda8 quiet
+}
+
+enuentry "Windows 7" {
+    set root=(hd0,1)
+    chainloader +1
+}
+
+
+}}}
+    * 移出/tools目录
+    * 执行 gpkg -unchroot /mnt/xg 退出系统
+    * 卸载/mnt/xg: umount /mnt/xg
     * 重新启动
 
 
