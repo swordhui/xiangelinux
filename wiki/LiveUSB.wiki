@@ -1,0 +1,51 @@
+#labels Featured
+#本文描述了如何构建弦歌的LiveUSB
+
+===1. 找一个1G以上的U盘，格式化一个至少1G的分区，可用ext4文件系统。===
+===2. 挂接到/mnt/xg===
+===2. 下载tools-bin-i686-0.10.7.tar.bz2到/mnt/xg并解压, 得到/mnt/xg/tools目录。===
+===3. 执行 bash tools/bin/gpkg -chroot /mnt/xg 进入系统===
+===4. 将优化参数从native改为i686, 参见文档[xgpkg]===
+===5. 修改完后， 执行gpkg -info, 应该看到CFLAGS已被修改。如果仍为native, 重做步骤4.===
+===6. 执行 gpkg stage1, 编译安装Stage1到/mnt/xg===
+===7. 完成后设置密码===
+===8. 安装Grub: 如果U盘是/dev/sdb, 执行grub-install /dev/sdb===
+===9. 修改/boot/grub/grub, 加入:===
+{{{
+menuentry "Xiange-2.6.32.11-LiveUSB-sdb1" {
+    set root=(hd0,1)
+    linux /boot/vmlinuz-2.6.32.11 rootdelay=8 root=/dev/sdb1
+}
+
+menuentry "Xiange-2.6.32.11-LiveUSB-sdc1" {
+    set root=(hd0,1)
+    linux /boot/vmlinuz-2.6.32.11 rootdelay=8 root=/dev/sdc1
+}
+
+menuentry "Xiange-2.6.32.11-LiveUSB-sda1" {
+    set root=(hd0,1)
+    linux /boot/vmlinuz-2.6.32.11 rootdelay=8 root=/dev/sda1
+}
+
+menuentry "Windows" {
+    set root=(hd1,1)
+    chainloader +1
+}
+}}}
+
+===10. 设置root. 先以root身份执行blkid, 得到U盘的UUID：===
+{{{
+/dev/sdb1: UUID="d016f3bd-5710-4594-b9b1-4bbebf7318d5" TYPE="ext4"
+}}}
+
+修改/etc/fstab, 设置根目录
+{{{
+UUID="d016f3bd-5710-4594-b9b1-4bbebf7318d5"     /      ext4    defaults        1       1
+}}}
+===11. 移除/tools目录===
+===12. 执行gpkg -unchroot /mnt/xg退出USB系统===
+===13, umount /mnt/xg, 拔除U盘，插入新系统启动===
+===14, 根据情况选择sdb1, sdc1, sda1启动。 GOOD Luck===
+
+这个U盘反过来可用做宿主，在其他机器上安装弦歌系统。
+
