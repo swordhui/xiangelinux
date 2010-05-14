@@ -194,7 +194,7 @@ I have no name!:/#
 
 }}}
 
-    * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包, 可以看到安装时间, 包大小, 和名称/版本.
+    * 安装完毕后，执行gpkg -I 检查所有已经安装的软件包, 可以看到安装时间, 包内文件有效内容大小, 和名称/版本.
 {{{
 I have no name!:/# gpkg -I
 2010-04-16 11:00:58      1K baselayout-0.2.1
@@ -290,6 +290,7 @@ d|       40| /bin
 
 File: 2, Dir: 75, Link 6, Size: 1K
 }}}
+    * 注意目录和链接的大小是tmpfs目录下的大小，拷贝到工作分区后，目录占4096个。所以包大小不统计目录和链接大小，只统计文件有效内容大小。
 
     * 可以用 gpkg -D baselayout 删除软件包, 但在进行下一步前, 要重新执行 gpkg -i baselayout 安装.
     * 包安装完毕后, 会自动生成二进制包(*.xgp), 放在/var/xiange/packages目录下. 如baselayout.xgp. 下次不想编译时, 可以直接安装二进制包: gpkg -ib /var/xiange/packages/baselayout-0.2.1.xgp
@@ -368,27 +369,46 @@ File: 2, Dir: 75, Link 6, Size: 1K
     * 这个文件由baselayout包创建，缺省是一个通用内核的.config配置文件。
     * 用户可以将适用于自己系统的.config文件覆盖缺省文件， 运行gpkg -i linux-kernel 命令启动内核编译, gpkg自动解压内核到临时目录, 并将/boot/config-xiange文件拷贝到内核源码目录,改名为.config, 然后启动编译过程 (make && make modules)
     * 编译完成后, gpkg会将bzImage和config安装到/boot目录, 模块安装到/lib/modules目录, 并生成内核文件列表信息.
-    * 用这种方法，内核文件和模块也会有记录，比直接安装内核要好。
-    * 内核安装完毕后会从/tmp/xiange/sources目录清除。如果想编译依赖于内核源码的模块，需要先准备内核源码，步骤如下:
+    * 用这种方法，内核文件和模块也会有记录，并采集MD5校验码，比直接安装内核要好。
+    * 内核安装完毕后会从/tmp/xiange/sources目录清除。如果想编译依赖于内核源码的模块，需要先还原内核源码（必须在原来的编译地址还原)，步骤如下:
 {{{
     mkdir -p /tmp/xiange/sources
     cd /tmp/xiange/sources
     tar xf /var/xiange/sources/linux-2.XXXX.tar.bz2
     cp /boot/config-xiange linux-2XXX/.config
+    make prepare
+    make modules_prepare
 }}}
     然后再编译模块就可以了。
 
 ===3.9 准备启动===
     * 设置密码，
-    * 修改/etc/fstab
-    * 安装GRUB2 或 GRUB
-        # GRUB2的安装十分简单， 执行 grub-install 设备名即可。如系统在/dev/sda, 执行 
+    * 修改/etc/fstab，设置根系统。
+    * 安装GRUB2 
+        # GRUB2的安装十分简单， 执行 grub-install 设备名即可。如系统在/dev/sda1, 执行 
 {{{
-    grub-install /dev/sda
+    grub-install /dev/sda1
 }}}
 
         # 加入配置文件到 /boot/grub/grub.cfg
 {{{
+
+# Timeout for menu
+set timeout=5
+
+# Set default boot entry as Entry 0
+set default=0
+
+#video settings
+#insmod video
+#insmod vbe
+#insmod gfxterm
+#insmod jpeg
+#
+#loadfont /boot/grub/ascii.pff
+#set gfxmode="1400x1050x24"
+#terminal_output.gfxterm
+#background_image /boot/grub/test.jpg
 
 menuentry "Xiange-2.6.32.11" {
     set root=(hd0,8)
@@ -400,12 +420,16 @@ enuentry "Windows 7" {
     chainloader +1
 }
 
-
 }}}
-    * 移出/tools目录
+    * 删除/tools目录，就像剪断脐带...
     * 执行 gpkg -unchroot /mnt/xg 退出系统
     * 卸载/mnt/xg: umount /mnt/xg
-    * 重新启动
+    * 重新启动, 新的Linux系统诞生. 如果内核没配置好... 就是大脑发育不全，小心了:)
+
+===3.10 安装Stage2===
+
+    Stage2 包含Xorg 7.5, GTK2, 必要的图形/声音库，firefox, pidgin, 和桌面管理器fvwm, 可打造一个工作环境。
+    * 首先升级
 
 
 
