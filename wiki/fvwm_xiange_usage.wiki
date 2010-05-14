@@ -1,0 +1,93 @@
+#本文描述了fvwm-xiange的使用方法。
+
+== 0. 简介 ==
+fvwm-xiange是弦歌Linux默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:
+[http://xiangelinux.googlecode.com/files/fvwm-xiange-term.png]
+
+== 1. 快捷启动区 ==
+屏幕左上角为快捷启动区，分为8个类别，分别为网络，图像，声音，系统，科学相关，Wine,游戏,和其他。在图标上点左键会出现程序列表。列表内容根据/etc/xg_launch目录下的文件决定:
+{{{
+sword@XGSvr /etc/xg_launch $ls
+audio  games  image  net  others  README  sci  sys  template  wine
+}}}
+
+可用看到xg_launch目录下有8个目录，分别对应上面提到的8个类别。
+我们打开net目录:
+{{{
+ls net
+C00firefox  C01links  C10pidgin  C15skype
+}}}
+
+可用看到有4个文件，分别表示四个于网络相关的程序: firefox, links, pidgin和skype.<br>
+用vi打开C00firefox:
+{{{
++ firefox%/usr/share/icons/hicolor/32x32/apps/firefox-my.png%	Exec firefox
+}}}
+
+可用看到只有一行， 以"+"开头， 后面时Title, %%之间的时图标路径，最好是32x32的，类型支持很多种，包括png, svg, xpm, jpg, tiff等等。 Exec后面是用户点击时执行的命令，可用带参数, 如:<br>
+{{{
+Exec sakura -e "sudo /etc/rc.d/init.d/eth1 start"
+}}}
+
+每个文件都有大写的C后面根2个数字开头，名字无所谓。数字表示在此类别中的顺序，越小越靠前。另外需要注意的Title不能有空格.<br>
+
+这样就可用随意定制快捷启动区要显示的项目。写完后不用重启任何东西，鼠标点击一下就可用看到新的修改了。
+
+== 2. 最小化图标区 ==
+在屏幕信息条的中间， 应用程序最小化后以图标方式放在这里。点击一下即可还原。<br>
+在窗口标题上点击右键，会最小化
+
+== 3. 系统托盘区 ==
+最小化去的右边是系统托盘区，一些聊天软件如pidgin可用利用这个区域显示系统信息。
+
+== 4. 系统信息区 ==
+右上角是系统信息区， 用conky显示系统信息。<br>
+第一行显示系统频率，CPU温度, 电池容量, 内存使用量和系统日期。<br>
+第二行显示CPU使用图表, 硬盘使用图表, 网络使用图表， 和系统时间，星期几
+
+== 5. 快捷键 ==
+{{{
+在桌面空白区域点左键，弹出系统菜单。
+在桌面空白区域点右键，会出来term, 默认是Sakura。
+
+按右边的Alt+L, 会锁住屏幕。
+按右边的Alt+E, 会弹出文件浏览器，pcmanfm
+按右边的Alt+T, 会弹出term
+按右边的Alt+F, 会弹出firefox
+按右边的Alt+R, 会朗读选中的英文文本，如果装了festival
+按右边的Alt+Esc, 会终止朗读文本
+
+在窗口标题点右键，会最小化窗口。
+
+期待加入的功能:
+右Alt+M, 最小化窗口
+右Alt+C, 关闭窗口
+右Alt+方向键，调整窗口大小
+}}}
+
+== 6. 壁纸 ==
+系统启动时，会从~/.wallpapers目录随机读取一个文件做壁纸，所以可以把好看的桌面都扔到那个目录。
+
+== 7. 编码 ==
+fvwm_xiange默认采用zh_CN.utf-8做系统编码。如果碰到以GBK/GB2312编码的文件，可以用iconv转换
+{{{
+iconv -f GBK -t UTF-8 aaa.txt -o aaa-utf8.txt
+}}}
+
+如果GBK编码的文件名，可以用:
+{{{
+LANG="zh_CN.GB2312" sakura -l
+}}}
+
+启动一个新的GB2312编码的Term, 将文件改名为英文名字。
+
+然后再utf-8的term里，将英文名改为中文名。
+
+
+
+
+
+
+
+
+
