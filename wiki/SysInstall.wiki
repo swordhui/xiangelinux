@@ -439,7 +439,7 @@ rm S97trackpoint
 gpkg --sync
 }}}
 
-    * 升级gpkg到0.10.8, 貌似这个有点难度...因为目前不核心包支持滚动升级。
+    * 升级gpkg到0.10.8, 貌似这个有点难度...因为目前核心包不支持滚动升级。
 {{{
 #删除gpkg的安装信息
 rm -rf /var/xiange/db/sys-apps/gpkg/
@@ -587,7 +587,8 @@ Xorg -configure
         FontPath     "/usr/share/fonts/wenquanyi/wqy-zenhei"
 }}}
     * 成功后尝试用startx启动X. 可用看到twm, 先忍受一会儿:)
-    * 配置pango
+    * 如果启动不成功，需要都X的log文件，或修改x11drivers的安装脚本，看看所需的驱动是否在内
+    * 配置pango，在xterm里：
 {{{
 pango-querymodules > /etc/pango/pango.modules
 }}}
