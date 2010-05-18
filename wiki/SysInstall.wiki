@@ -1,5 +1,5 @@
+#summary 弦歌Linux安装指南
 #labels Featured
-#安装弦歌Linux
 
 = 0.简介 =
 
