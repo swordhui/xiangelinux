@@ -1,5 +1,5 @@
+#summary 本文描述了如何构建弦歌的LiveUSB
 #labels Featured
-#本文描述了如何构建弦歌的LiveUSB
 
 ===1. 找一个1G以上的U盘，格式化一个至少1G的分区，可用ext4文件系统。===
 ===2. 挂接到/mnt/xg===
@@ -48,4 +48,3 @@ UUID="d016f3bd-5710-4594-b9b1-4bbebf7318d5"     /      ext4    defaults        1
 ===14, 根据情况选择sdb1, sdc1, sda1启动。 GOOD Luck===
 
 这个U盘反过来可用做宿主，在其他机器上安装弦歌系统。
-
