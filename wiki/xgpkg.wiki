@@ -1,5 +1,5 @@
+#summary 弦歌Linux的包管理系统
 #labels Featured
-#弦歌Linux的包管理系统
 
 =0. 简介 =
 
