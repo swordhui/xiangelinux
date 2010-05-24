@@ -263,3 +263,48 @@ ls -l /var/xiange/sources/test*
 -rwxrwxr-x 1 sword root 407  5月 24 16:43 /var/xiange/sources/test-1.0.0.tar.bz2
 }}}
 
+== 4.5 解压 ==
+修改test-1.0.0.xgb的xgb_unpack函数，如下:
+{{{
+xgb_unpack()
+{
+        #unpard file from $XGPATH_SOURCE to current directory.
+        echo "Unpacking to `pwd`"
+        tar xf $XGPATH_SOURCE/`basename $SRC_URI`
+}
+}}}
+
+可以看到此函数打印当前的路径信息，然后将位于$XGPATH_SOURCE的test-1.0.0.tar.bz2解压到当前路径。为了测试，先堵住xgb_config()的执行,修改如下:
+{{{
+
+xgb_config()
+{
+        echo "config $N-$V$R, this is not a error"
+        return 1
+}
+}}}
+
+返回1表示xgb_config()出了问题，gpkg就不会继续执行。这样可以测试解压过程。<br>
+启动安装过程:
+{{{
+gpkg -i test
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+test-1.0.0.tar.bz2 exists, Skip.
+Download OK
+
+unpacking test-1.0.0...
+Unpacking to /tmp/xiange/sources
+config test-1.0.0... this is not a error
+[Error] call xgb_config failed
+}}}
+
+可以看到先调用xgb_init(), 然后检查文件是否已下载，如果已经下载，开始调用xgb_unpack().<br>
+xgb_unpack()将软件包解压到/tmp/xiange/sources目录: 
+{{{
+ls -l /tmp/xiange/sources/
+总用量 0
+drwxr-xr-x 2 sword sword 80  5月 24 16:41 test-1.0.0
+}}}
+
+== 4.6 配置 ==
