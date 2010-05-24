@@ -43,12 +43,12 @@
     gpkg在调用其他函数前，一定会调用此函数一次<br>
     若脚本不实现此函数，gpkg会调用默认的xgb_init函数，直接返回0.
 
-===1.3.3 xgb_unpack()===
+===1.3.2 xgb_unpack()===
     gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack函数。<br>
     xgb_unpack需要将下载的源码(位于$XGPATH_SOUCE目录)解压到当前目录，缺省是/tmp/xiange/sources/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
     成功返回0, 否则1并显示错误信息. 
    
-===1.3.2 xgb_config()===
+===1.3.3 xgb_config()===
     gpkg在调用玩xgb_unpack后，调用xgb_config配置软件包。<br>
     调用xgb_config前，当前目录仍在解压目录(即/tmp/xiange/sources/)<br>
     xgb_config 首先要进入或创建编译目录，然后调用configure配置软件包。配置由三个大部分组成, 一为安装目录, 即--prefix, --sysconfdir等, 这个每个软件包都一样, 放在变量$XGB_CONFIG里
