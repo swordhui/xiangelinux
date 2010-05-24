@@ -173,3 +173,5 @@ xgb_install()
 }}}
 
 = 3. 模板 ==
+
+模板文件在/var/xiange/xglibs/template.xgb, 写新的脚本文件时，只需要拷贝并编辑模板文件即可。
