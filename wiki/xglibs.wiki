@@ -22,7 +22,7 @@
 ||$XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
 ||$XGPATH_DEST||安装/打包目录||"/tmp/xiange/pack/$N-$V"||||
 ||$CFLAGS||编译参数||"-march=native -mtune=native -O2 -fomit-frame-pointer -pipe"||系统变量||
-||$CXXFLAGS||编译参数||同$CFLAGS||系统变量||
+||$CXXFLAGS||C++编译参数||同$CFLAGS||系统变量||
 ||XGB_CONFIG||autotools配置参数||--prefix=/usr/||进行configure时, 可以指定$XGB_CONFIG做参数. 软件包特定的部分用 XGB_CONFIG+=" --para=abc "实现.||
 
 关于$T, $N, $V, $R, 可以参见[xgpkg gpkg]中的软件包命名规则。
