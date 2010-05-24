@@ -308,3 +308,281 @@ drwxr-xr-x 2 sword sword 80  5月 24 16:41 test-1.0.0
 }}}
 
 == 4.6 配置 ==
+test软件包没有使用autotools, 没有configure的过程。我们在这里打印一些输入参数:
+{{{
+#config
+xgb_config()
+{
+        echo "config $N-$V$R..." 
+
+        cd $N-$V
+
+        echo ""
+        echo "-------------------------------------"
+        echo ">>> File List:"
+        ls -l
+
+
+        echo ">>> XGB_CONFIG: $XGB_CONFIG"
+        echo ">>> CC: $CC"
+        echo ">>> CFLAGS: $CFLAGS"
+        echo ">>> CXX: $CXX"
+        echo ">>> CXXFLAGS: $CXXFLAGS"
+        echo ">>> XGPATH_SOURCE: $XGPATH_SOURCE"
+        echo ">>> XGPATH_DEST: $XGPATH_DEST"
+        echo ">>> current dir: `pwd`"
+        echo "-------------------------------------"
+
+        echo ""
+        sleep 1
+}
+}}}
+
+同时堵住xgb_build()的执行:
+{{{
+#build
+xgb_build()
+{
+        echo "make $N-$V$R... this is not a error"
+        return 1
+}
+}}}
+
+执行如下 gpkg -i test:
+{{{
+gpkg -i test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+test-1.0.0.tar.bz2 exists, Skip.
+Download OK
+unpacking test-1.0.0...
+Unpacking to /tmp/xiange/sources
+
+config test-1.0.0...
+
+-------------------------------------
+>>> File List:
+总用量 8
+-rw-r--r-- 1 sword sword 212  5月 24 16:41 Makefile
+-rw-r--r-- 1 sword sword  74  5月 24 16:41 test1.c
+>>> XGB_CONFIG: --prefix=/usr 
+>>> CC: gcc
+>>> CFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> CXX: g++
+>>> CXXFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> XGPATH_SOURCE: /var/xiange/sources
+>>> XGPATH_DEST: /tmp/xiange/pack
+>>> current dir: /tmp/xiange/sources/test-1.0.0
+-------------------------------------
+
+make test-1.0.0... this is not a error
+[Error] call xgb_build failed
+}}}
+
+可以看到输入参数的取值。<br>
+
+== 4.7 编译 ==
+
+对大部分软件包来说，编译就是执行make. 我们在这里指定编译参数:
+{{{
+#build
+xgb_build()
+{
+        echo "make $N-$V$R..."
+        make CC="$CC" CFLAGS="$CFLAGS"
+}
+
+}}}
+
+同时堵住xgb_install()的执行。
+{{{
+#install
+xgb_install()
+{
+        echo "install to $XGPATH_DEST... this is not a error"
+
+        return 1
+
+        #install everything to $XGPATH_DEST
+        #make DESTDIR=$XGPATH_DEST install
+}
+}}}
+
+注意不要堵xgb_check()..  gpkg不会检查xgb_check的返回值，因为有些包永远都是测试失败...
+
+再次执行 gpkg -i test
+{{{
+gpkg -i test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+test-1.0.0.tar.bz2 exists, Skip.
+Download OK
+unpacking test-1.0.0...
+Unpacking to /tmp/xiange/sources
+config test-1.0.0...
+
+-------------------------------------
+>>> File List:
+总用量 8
+-rw-r--r-- 1 sword sword 212  5月 24 16:41 Makefile
+-rw-r--r-- 1 sword sword  74  5月 24 16:41 test1.c
+>>> XGB_CONFIG: --prefix=/usr 
+>>> CC: gcc
+>>> CFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> CXX: g++
+>>> CXXFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> XGPATH_SOURCE: /var/xiange/sources
+>>> XGPATH_DEST: /tmp/xiange/pack
+>>> current dir: /tmp/xiange/sources/test-1.0.0
+-------------------------------------
+
+make test-1.0.0...
+gcc -march=native -mtune=native -O2 -fomit-frame-pointer -pipe -o test test1.c
+
+install to /tmp/xiange/pack/test-1.0.0... this is not a error
+[Error] call xgb_install failed
+
+}}}
+
+可以看到编译参数起作用了。 运行一下test:
+{{{
+/tmp/xiange/sources/test-1.0.0/test 
+hello, world
+}}}
+
+== 4.6 安装 ==
+将软件包安装到$XGPATH_DEST目录. 在写xgb_install()函数之前，请仔细阅读软件包的Makefile文件。
+{{{
+
+#install
+xgb_install()
+{
+        echo "install to $XGPATH_DEST..."
+
+        #install everything to $XGPATH_DEST
+        make DESTDIR=$XGPATH_DEST install
+}
+}}}
+
+然后再次执行 gpkg -i test.
+{{{
+gpkg -i test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+test-1.0.0.tar.bz2 exists, Skip.
+Download OK
+unpacking test-1.0.0...
+Unpacking to /tmp/xiange/sources
+config test-1.0.0...
+
+-------------------------------------
+>>> File List:
+总用量 8
+-rw-r--r-- 1 sword sword 212  5月 24 16:41 Makefile
+-rw-r--r-- 1 sword sword  74  5月 24 16:41 test1.c
+>>> XGB_CONFIG: --prefix=/usr 
+>>> CC: gcc
+>>> CFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> CXX: g++
+>>> CXXFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> XGPATH_SOURCE: /var/xiange/sources
+>>> XGPATH_DEST: /tmp/xiange/pack
+>>> current dir: /tmp/xiange/sources/test-1.0.0
+-------------------------------------
+
+make test-1.0.0...
+gcc -march=native -mtune=native -O2 -fomit-frame-pointer -pipe -o test test1.c
+install to /tmp/xiange/pack/test-1.0.0...
+checking test-1.0.0..
+mkdir -p /tmp/xiange/pack/test-1.0.0/usr/bin
+cp test /tmp/xiange/pack/test-1.0.0/usr/bin
+>>> strip debug info..
+>>> compress man docs..
+>>> make packages... please wait a minute
+Moving files to / ...
+Install OK, cleaning up..
+running after package installed...
+[***] test-1.0.0 installed to your system.
+}}}
+
+Bingo! 安装成功了。我们用gpkg -s test 看一下:
+{{{
+gpkg -s test
+
+* app-test/test
+	Available: 1.0.0
+	Installed: 1.0.0 | 2010-05-24 17:32:09 3K
+	Desc.    : xiange build script for testing
+	Homepage : http://code.google.com/p/xiangelinux/
+}}}
+
+用gpkg -I 看一下:
+{{{
+
+gpkg -I | sort | tail
+
+2010-05-21 11:14:43    449K conky-1.8.0
+2010-05-21 11:25:39    683K libupnp-1.6.6
+2010-05-21 11:57:43   7599K amule-2.2.6
+2010-05-21 14:10:32  20317K crypto++-5.6.0
+2010-05-21 19:17:01    439K libglade-2.6.4
+2010-05-21 19:34:47    795K nasm-2.08.01
+2010-05-21 20:11:04   6229K snes9x-1.52
+2010-05-24 09:33:06     35K gpkg-0.10.9
+2010-05-24 17:32:09      3K test-1.0.0
+}}}
+
+用 gpkg -l test 看一下:
+{{{
+gpkg -l test
+d|       60| /usr
+d|       60| /usr/bin
+ |     2792| /usr/bin/test
+
+File: 1, Dir: 2, Link 0, Size: 3K
+}}}
+
+看看configure的输出:
+{{{
+vi /var/xiange/db/app-test/test/test-1.0.0.config.gz
+}}}
+
+删除软件包:
+{{{
+gpkg -D test
+init test-1.0.0 build script...
+running before package delete...
+Remove file /usr/bin/test
+running after package delete...
+remove file /var/xiange/db/app-test/test/test-1.0.0.config
+remove file /var/xiange/db/app-test/test/test-1.0.0.xgb
+remove file /var/xiange/db/app-test/test/test-1.0.0.file
+remove file /var/xiange/db/app-test/test/test-1.0.0.test
+remove file /var/xiange/db/app-test/test/test-1.0.0.file
+Remove dir /var/xiange/db/app-test/test
+Remove dir /var/xiange/db/app-test
+}}}
+
+测试安装二进制软件包:
+{{{
+gpkg -ib /var/xiange/packages/test-1.0.0.xgp 
+
+parsing /var/xiange/packages/test-1.0.0.xgp...
+installing app-test/test-1.0.0 ...
+Moving files to / ...
+Install OK, cleaning up..
+init test-1.0.0 build script...
+running after package installed...
+[OK] Binary package test-1.0.0 installed to you system.
+}}}
+
+运行test
+{{{
+/usr/bin/test 
+hello, world
+}}}
+
+其他的函数可以从脚本里删除。
