@@ -176,3 +176,90 @@ xgb_install()
 = 3. 模板 ==
 
 模板文件在/var/xiange/xglibs/template.xgb, 写新的脚本文件时，只需要拷贝并编辑模板文件即可。
+
+= 4. DIY: 动手写测试脚本 =
+
+== 4.1 创建目录 ==
+
+在/var/xiange/xglibs下创建一个测试用的类别目录app-test:
+{{{
+mkdir /var/xiange/xglibs/app-test
+cd /var/xiange/xglibs/app-test
+}}}
+
+然后创建一个test目录。test即为包名称。
+{{{
+mkdir test
+cd test
+}}}
+
+== 4.2 复制模板 ==
+
+将模板文件复制为编译脚本。编译脚本名称由软件包名和版本号组成，中间用'-'隔开，以.xgb为扩展名。如test-1.0.0.xgb
+{{{
+cp ../../template.xgb test-1.0.0.xgb
+}}}
+
+复制完成后，gpkg就可以搜索到test软件包:
+{{{
+gpkg -s test
+
+* app-test/test
+	Available: 1.0.0
+	Installed:	 None
+	Desc.    : This is a sample skeleton xiange build script file
+	Homepage : http://foo.bar.com/
+}}}
+
+可以看到来自于模板文件的描述和主页信息。
+
+== 4.3 修改信息 ==
+
+首先修改DESCRIPTION和HOMEPAGE变量，让其更有意义。修改完后再次用 gpkg -s test, 可以看到信息已更新。
+{{{
+vi test-1.0.0.xgb 
+
+gpkg -s test
+
+* app-test/test
+	Available: 1.0.0
+	Installed:	 None
+	Desc.    : xiange build script for testing
+	Homepage : http://code.google.com/p/xiangelinux/
+}}}
+
+== 4.4 下载软件包==
+只需要修改$SRC_URI 为测试工程的下载地址http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2. 
+{{{
+test-1.0.0.xgb, 第17行
+SRC_URI="http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2"
+
+如果有多个文件，可以每行一个。
+}}}
+
+然后执行:
+{{{
+gpkg -d test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+downloading from http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2, retry 0...
+--2010-05-24 16:46:10--  http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2
+正在解析主机 xiangelinux.googlecode.com... 72.14.203.82
+正在连接 xiangelinux.googlecode.com|72.14.203.82|:80... 已连接。
+已发出 HTTP 请求，正在等待回应... 200 OK
+长度：407 [application/x-bzip2]
+正在保存至: “/var/xiange/sources/test-1.0.0.tar.bz2.tmp”
+
+100%[========================================>] 407         --.-K/s   in 0.003s  
+
+2010-05-24 16:46:11 (125 KB/s) - 已保存 “/var/xiange/sources/test-1.0.0.tar.bz2.tmp” [407/407])
+
+}}}
+
+文件保存在/var/xiange/sources/test-1.0.0.tar.bz2,
+{{{
+ls -l /var/xiange/sources/test*
+-rwxrwxr-x 1 sword root 407  5月 24 16:43 /var/xiange/sources/test-1.0.0.tar.bz2
+}}}
+
