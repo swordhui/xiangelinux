@@ -1,4 +1,5 @@
 #summary 包编译脚本的写作方法
+#labels Featured
 
 = 0. 简介 =
 
