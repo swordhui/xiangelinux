@@ -265,6 +265,17 @@ Searched 957 files, 4 orphans, 0 conflicts
 ||结果||返回0表示成功, 返回1表示git失败||
 ||状态||已完成||
 
+示例:
+{{{
+gpkg --sync
+Initialized empty Git repository in /var/xiange/xglibs/.git/
+remote: Counting objects: 26, done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 26 (delta 5), reused 0 (delta 0)
+Receiving objects: 100% (26/26), done.
+Resolving deltas: 100% (5/5), done.
+}}}
+
 =13. 显示/修改优化参数=
 ||命令格式||gpkg -info ||
 ||示例||gpkg -info||
