@@ -48,6 +48,26 @@ gpkg -s gcc
 ||补充说明||下载包括必要的补丁文件||
 ||状态||已完成||
 
+示例:
+{{{
+gpkg -d test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+downloading from http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2, retry 0...
+--2010-05-24 16:46:10--  http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2
+正在解析主机 xiangelinux.googlecode.com... 72.14.203.82
+正在连接 xiangelinux.googlecode.com|72.14.203.82|:80... 已连接。
+已发出 HTTP 请求，正在等待回应... 200 OK
+长度：407 [application/x-bzip2]
+正在保存至: “/var/xiange/sources/test-1.0.0.tar.bz2.tmp”
+
+100%[========================================>] 407         --.-K/s   in 0.003s  
+
+2010-05-24 16:46:11 (125 KB/s) - 已保存 “/var/xiange/sources/test-1.0.0.tar.bz2.tmp” [407/407])
+
+}}}
+
 
 =4. 安装/升级软件包=
 ||命令格式||gpkg -i 软件名称||
@@ -56,12 +76,67 @@ gpkg -s gcc
 ||结果||返回0表示安装成功, 返回1安装失败||
 ||状态||已可安装，尚不可升级。升级时需要先卸载，再安装新版本。尚不支持依赖关系处理。||
 
+示例:
+{{{
+gpkg -i test
+
+Begin download test-1.0.0...
+init test-1.0.0 build script...
+test-1.0.0.tar.bz2 exists, Skip.
+Download OK
+unpacking test-1.0.0...
+Unpacking to /tmp/xiange/sources
+config test-1.0.0...
+
+-------------------------------------
+>>> File List:
+总用量 8
+-rw-r--r-- 1 sword sword 212  5月 24 16:41 Makefile
+-rw-r--r-- 1 sword sword  74  5月 24 16:41 test1.c
+>>> XGB_CONFIG: --prefix=/usr 
+>>> CC: gcc
+>>> CFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> CXX: g++
+>>> CXXFLAGS: -march=native -mtune=native -O2 -fomit-frame-pointer -pipe
+>>> XGPATH_SOURCE: /var/xiange/sources
+>>> XGPATH_DEST: /tmp/xiange/pack
+>>> current dir: /tmp/xiange/sources/test-1.0.0
+-------------------------------------
+
+make test-1.0.0...
+gcc -march=native -mtune=native -O2 -fomit-frame-pointer -pipe -o test test1.c
+install to /tmp/xiange/pack/test-1.0.0...
+checking test-1.0.0..
+mkdir -p /tmp/xiange/pack/test-1.0.0/usr/bin
+cp test /tmp/xiange/pack/test-1.0.0/usr/bin
+>>> strip debug info..
+>>> compress man docs..
+>>> make packages... please wait a minute
+Moving files to / ...
+Install OK, cleaning up..
+running after package installed...
+[***] test-1.0.0 installed to your system.
+}}}
+
 =5. 安装/升级二进制软件包=
 ||命令格式||gpkg -ib 软件包路径名称(.xgp)||
 ||示例||gpkg -ib /var/xiange/packages/autoconf-2.20.xgp||
 ||功能||如果已经安装且当前版本低于最新版本，进行升级操作。<br>如果没有安装，进行安装操作<br>安装成功后，记录软件包信息，包括每个文件路径，大小，校验码等, 并执行包内安装脚本的xgb_postinst函数||
 ||结果||返回0表示安装成功, 返回1安装失败||
 ||状态||已可安装，尚不可升级。升级时需要先卸载，再安装新版本||
+
+示例:
+{{{
+gpkg -ib /var/xiange/packages/test-1.0.0.xgp 
+
+parsing /var/xiange/packages/test-1.0.0.xgp...
+installing app-test/test-1.0.0 ...
+Moving files to / ...
+Install OK, cleaning up..
+init test-1.0.0 build script...
+running after package installed...
+[OK] Binary package test-1.0.0 installed to you system.
+}}}
 
 
 =6. 卸载软件包=
@@ -70,6 +145,22 @@ gpkg -s gcc
 ||功能||卸载软件包，先执行包内脚本的xgb_prerm，删除所有包文件，再执行包内脚本文件的xgb_postrm||
 ||结果||返回0表示卸载成功, 返回1卸载失败||
 ||状态||已完成||
+
+示例:
+{{{
+gpkg -D test
+init test-1.0.0 build script...
+running before package delete...
+Remove file /usr/bin/test
+running after package delete...
+remove file /var/xiange/db/app-test/test/test-1.0.0.config
+remove file /var/xiange/db/app-test/test/test-1.0.0.xgb
+remove file /var/xiange/db/app-test/test/test-1.0.0.file
+remove file /var/xiange/db/app-test/test/test-1.0.0.test
+remove file /var/xiange/db/app-test/test/test-1.0.0.file
+Remove dir /var/xiange/db/app-test/test
+Remove dir /var/xiange/db/app-test
+}}}
 
 
 =7. 校验软件包=
