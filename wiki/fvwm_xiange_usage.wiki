@@ -1,7 +1,7 @@
 #summary 本文描述了fvwm-xiange的使用方法。
 
 == 0. 简介 ==
-fvwm-xiange是弦歌Linux默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:
+fvwm-xiange是[http://code.google.com/p/xiangelinux/ 弦歌Linux]默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:
 [http://xiangelinux.googlecode.com/files/fvwm-xiange-term.png]
 
 == 1. 快捷启动区 ==
@@ -91,6 +91,4 @@ LANG="zh_CN.GB2312" sakura -l
    * 右Alt + 1,2,3,4 切换工作区
    * 快捷键访问快捷菜单
    * 窗口操作图标采用了FVWM默认方式，需要修改一下
-
-
 
