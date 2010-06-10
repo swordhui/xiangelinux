@@ -1,5 +1,5 @@
 #summary 成员贡献列表
 
-||名称||贡献列表||个人简介||个人网站||
-||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||||[http://swordhui.spaces.live.com/ Sword Island]||
-||pinkme005||xgfileinfo初期编码||||暂无||
+||名称||贡献列表||个人网站||
+||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||[http://swordhui.spaces.live.com/ Sword Island]||
+||pinkme005||xgfileinfo初期编码||暂无||
