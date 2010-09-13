@@ -14,16 +14,21 @@ BUG汇报请至jonsk.echo@gmail.com。
 1、由于我的开发机是NAS，有双网卡，而龙芯盒子只有一个网卡，所以启动时会出现eth1使用dhcp出错的信息,这可能不算是BUG。
 
 2、编译一些程序时出现下列错误：
+
 cc -D_GNU_SOURCE -I proc -I/usr/include/ncurses -fno-common -ffast-math -W -Wall -Wshadow -Wcast-align -Wredundant-decls -Wbad-function-cast -Wcast-qual -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -O2 -s  -Wdeclaration-after-statement -Wpadded -Wstrict-aliasing -fweb -frename-registers -fomit-frame-pointer -fno-inline-functions -c -o pwdx.o pwdx.c
+
 pwdx.c: In function 'main':
+
 pwdx.c:38:15: error: 'PATH_MAX' undeclared (first use in this function)
+
 pwdx.c:38:15: note: each undeclared identifier is reported only once for each function it appears in
+
 pwdx.c:38:11: warning: unused variable 'buf'
+
 make: *** [pwdx.o] Error 1
 
 此问题可能是由于eglibc和ncurses的编译引起的，但目前这两个包能正常工作。
 
-3、内核头文件问题，目前使用的头文件是2.6.35的，以后将使用龙芯公司提供的源代码“git://dev.lemote.com/linux-loongson-community”，内核头文件也将使用龙芯内核提供的，但是不知道是否会有兼容性问题
 
 已解决的问题：
 
