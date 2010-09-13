@@ -9,6 +9,11 @@ BUG汇报请至jonsk.echo@gmail.com。
 下载地址：
 http://xiangelinux.googlecode.com/files/xiange-N32-loongson-0.2.tar.bz2
 
+系统安装方法：
+将下载的xiange-N32-loongson-0.2.tar.bz2解压至空的分区下。
+再设置/boot/boot.cfg文件，使用刚才解压的分区为新的根分区,内核可以使用你的宿主系统的内核。
+xiange-N32-loongson-0.2系统带有两个内核，一个是debian的，另一个由fc13提供，如果宿主系统内核无法启动请使用弦歌系统自带内核（推荐使用debian的内核）
+
 软件安装方法参见：
 http://code.google.com/p/xiangelinux/wiki/xgpkg
 
