@@ -1,8 +1,11 @@
 #labels 文档,龙芯2F,N32
 此版本将命名为xiange-N32-loongson-0.2版本。
+
 此版本修正了0.1版本的一些启动问题。
+
 此版本仍是测试版本。
-些版本清除了man、info、doc文档，原因是受google上传文件大小限制。
+
+此版本清除了man、info、doc文档，原因是受google上传文件大小限制。
 
 BUG汇报请至jonsk.echo@gmail.com。
 
