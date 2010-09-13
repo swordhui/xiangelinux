@@ -6,7 +6,11 @@
 
 BUG汇报请至jonsk.echo@gmail.com。
 
-下载地址：http://xiangelinux.googlecode.com/files/xiange-N32-loongson-0.2.tar.bz2
+下载地址：
+http://xiangelinux.googlecode.com/files/xiange-N32-loongson-0.2.tar.bz2
+
+软件安装方法参见：
+http://code.google.com/p/xiangelinux/wiki/xgpkg
 
 
 目前已知道的问题：
