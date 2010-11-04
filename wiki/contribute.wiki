@@ -2,7 +2,7 @@
 
 ||名称||贡献列表||个人网站||
 ||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||[http://swordhui.spaces.live.com/ Sword Island]||
-||王江伟||1.龙芯版本的编译,脚本写作, 和分支维护||[http://wjw1td.blog.163.com/ Blog]||
+||王江伟||1.龙芯版本的编译,脚本写作<br>龙芯脚本分支维护||[http://wjw1td.blog.163.com/ Blog]||
 ||pinkme005||xgfileinfo初期编码||暂无||
 ||tomgreen||版本处理的bash函数||暂无||
 ||lastart||版本处理bash函数||暂无||
