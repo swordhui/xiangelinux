@@ -161,6 +161,7 @@ cp /usr/src/linux/arch/i386/boot/bzImage /mnt/img/boot/vmlinuz-2.6.31
   这两个步骤可以放到内核的Makefile中, 以后每次编译完成后, 自动更新到hd0.img里.
 
   然后将下列配置写到/mnt/img/boot/grub/grub.cfg
+
 {{{
 
 # Timeout for menu
@@ -199,22 +200,27 @@ pb 0x00007c00
 ==2.3 内核是怎样链成的==
 		
   首先编译内核的保护模式代码, 生成源码根目录的vmlinux. 这是一个elf格式的文件, 可以用readelf查看.
+
 {{{
 readelf -a /usr/src/linux/vmlinux | less
 }}}
 
   这个文件包含所有的符合信息, 容量巨大.
+
 {{{
 ls -lh /usr/src/linux/vmlinux
 -rwxr-xr-x 1 root root 4.8M Sep 10 17:28 /usr/src/linux/vmlinux
 }}}
+
   文件内容会在后面章节细述.
 
   接着将vmlinux洗净压缩. 这个工作在 arch/x86/boot/compressed目录进行. 读Makefile可以看到先进行objcopy操作, 在compressed目录下生成vmlinux.bin.
+
 {{{
 ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
 -rwxr-xr-x 1 root root 3.7M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
 }}}
+
   因为去掉了调试信息, 文件稍小了一些.
 
   接着根据用户的选择进行压缩, 目前支持gz, bz2, lzma三种方式. 我用默认方式, 生成vimlinux.bin.gz.
@@ -223,6 +229,7 @@ ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
 #ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz
 -rw-r--r-- 1 root root 1.9M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz
 }}}
+
   可以看到也有近50%的压缩率.
 
   紧接着加入自解压部分, 生成新的vmlinux.
@@ -242,7 +249,7 @@ ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux
   最后, 利用内核工具"build", 将setup.bin和vmlinux.bin拷贝在一起, 并填上必要的信息如setup部分的大小等, grub等引导程序可以使用的bzImage诞生了.
 
 
-==2.3 内核实模式代码==
+==2.4 内核实模式代码==
 
   实模式代码位于arch/x86/boot. 记得Linux2.6.18之前所有的代码都用汇编写成, 2.6.18之后大部分替换成了C. 
 
@@ -252,7 +259,7 @@ ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux
 
   在main()的最后调用go_to_protected_mode(). 这个函数位于pm.c, 它打开A20, 初始化协处理器(如果有), 关掉所有中断, 设置空的IDT和最基本的GDT, 接着调用protected_mode_jump跳转到保护模式的入口代码0x100000. 这个函数定义在pmjump.S. 注意跳转的时候, boot_params被放在esi寄存器.
 
-==2.4 保护模式:自解压过程==
+==2.5 保护模式:自解压过程==
 
   内核保护模式的入口在arch/x86/boot/compressed/head_32.S (32位架构). 我们利用bochs的调试功能, 跟着走一遍:
 
