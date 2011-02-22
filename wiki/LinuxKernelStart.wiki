@@ -1,26 +1,29 @@
 #summary Linux内核2.6.31启动过程 (x86架构) -- 学习笔记
 
-[SIZE="5"]1. 构造调试环境[/SIZE]
+=1. 构造调试环境=
 
 	由于bochs内建调试功能, 且支持gdb, 用它调试内核会很方便.
 
-	[SIZE="4"]1.1 构建磁盘镜像[/SIZE]
+==1.1 构建磁盘镜像==
 
-		[CODE]
+{{{
 dd if=/dev/zero of=hd0.img count=$((63*16*100))
-[/CODE]
+}}}
 
-		用这个命令可以构建一个50MB左右的磁盘镜像, 输出结果如下:
+	用这个命令可以构建一个50MB左右的磁盘镜像, 输出结果如下:
 
-                100800+0 records in
-		100800+0 records out
-		51609600 bytes (52 MB) copied, 0.734578 s, 70.3 MB/s
+{{{
+        100800+0 records in
+	100800+0 records out
+	51609600 bytes (52 MB) copied, 0.734578 s, 70.3 MB/s
+}}}
 
-		注意count必须为63*16的倍数, 否则bochs识别硬盘会有问题.
+    注意count必须为63*16的倍数, 否则bochs识别硬盘会有问题.
 
-	[SIZE="4"]1.2 挂载磁盘镜像[/SIZE]
-
-		[CODE]losetup /dev/loop0 hd0.img[/CODE]
+==1.2 挂载磁盘镜像==
+{{{
+		losetup /dev/loop0 hd0.img
+}}}
 		这个命令可以将文件绑定到一个loop设备. 如果/dev/loop0不存在, 可以尝试 modprobe loop.
 
 		然后进行设备初始化:
