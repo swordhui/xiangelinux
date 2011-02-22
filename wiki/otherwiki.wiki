@@ -1,8 +1,8 @@
 #summary 其他文档列表
 ||0||贡献列表||[contribute]||||
-||1||LiveUSB构建方法||[LiveUSB]||swordhuihui||
-||2||解决包依赖关系的编码指南||[dep_implement]||swordhuihui||
+||1||[LiveUSB LiveUSB构建方法]||swordhuihui||
+||2||[dep_implement 解决包依赖关系的编码指南]||swordhuihui||
 
 ---------------------------------------------------------------------------------------------
 Linux内核相关
-||1||Linux内核2.6.31启动过程 (x86架构)||[LinuxKernelStart]||swordhuihui||
+||1||[LinuxKernelStart Linux内核2.6.31启动过程 (x86架构)]||swordhuihui||
