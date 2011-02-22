@@ -29,6 +29,7 @@ losetup /dev/loop0 hd0.img
   这个命令可以将文件绑定到一个loop设备. 如果/dev/loop0不存在, 可以尝试 modprobe loop.
 
   然后进行设备初始化:
+
 {{{
 cfdisk -s 63 -h 16 /dev/loop0
 }}}
@@ -49,21 +50,25 @@ Device Boot      Start         End      Blocks   Id  System
 }}}
 
   将分区1挂载到/dev/loop1.
+
 {{{
 losetup /dev/loop1 hd0.img -o $((63*512))
 }}}
 
   格式化/dev/loop1为ext3格式.
+
 {{{
 mkfs.ext3 /dev/loop1
 }}}
 
   在mnt下创建img目录, 做以后维护用.
+
 {{{
 mkdir -p /mnt/img
 }}}
 
   将loop1挂载到/mnt/img
+
 {{{
 mount /dev/loop1 /mnt/img/
 }}}
@@ -77,6 +82,7 @@ cp -r /usr/lib/grub/i386-pc/ /mnt/img/boot/grub
 }}}
 
   生成一个core.img, biosdisk负责读取磁盘, part_msdos负责处理MBR, ext2负责读取ext3分区.
+
 {{{
 cd /mnt/img/boot/grub/
 grub-mkimage -o core.img biosdisk part_msdos ext2[/CODE]
@@ -87,15 +93,18 @@ grub-mkimage -o core.img biosdisk part_msdos ext2[/CODE]
 ls -lh core.img
 -rw-r--r-- 1 root root 25K Sep 21 14:28 core.img
 }}}
+
   只有区区的25K.. 里面甚至还包含一个小的应急shell, 不过作用不大.
 
   安装grub2到(hd0), 根目录在(hd0,1)
+
 {{{
 echo "(hd0)   /dev/loop0" > ./device.map
 grub-setup -m ./device.map -d /mnt/img/boot/grub/ -r '(hd0,1)' '(hd0)'
 }}}
 
   检查一下安装成果:
+
 {{{
 hexdump -C /dev/loop0 | less
 }}}
@@ -110,6 +119,7 @@ hexdump -C /dev/loop0 | less
   就说明安装成功.
 
   清理一下.
+
 {{{
 cd 
 umount /mnt/img
@@ -137,11 +147,13 @@ ata0-master: type=disk, path="hd0.img", cylinders=100, heads=16, spt=63
 ==2.1 安装内核==
 
   退出bochs, 挂载hd0.img:
+
 {{{
 mount hd0.img /mnt/img/ -o loop,offset=$((63*512))
 }}}
 	
   拷贝bzImage.
+
 {{{
 cp /usr/src/linux/arch/i386/boot/bzImage /mnt/img/boot/vmlinuz-2.6.31
 }}}
