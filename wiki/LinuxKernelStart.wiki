@@ -160,90 +160,122 @@ menuentry "Linux-2.6.31" {
 }
 }}}
 
-  卸载/mnt/img, 启动测试一下, 顺利的话, 你能看到一个panic. 见图 pic-2.1.png.
+  卸载/mnt/img, 启动测试一下, 顺利的话, 你能看到一个panic:
+
+[http://xiangelinux.googlecode.com/files/pic-2.1.png]
 
 
-	[SIZE="4"]2.2 从loader到内核[/SIZE]
+==2.2 从loader到内核==
 
-		先测试一下bochs的调试能力. bochs以调试模式启动后, 会自动停在BIOS中Reset代码, 地址为0xFFFFFFF0. 我们在bochs console里输入:
-		[CODE]pb 0x00007c00[/CODE]		
-		在0x7c00设置一个断点, 这正式GRUB2 MBR代码的入口点. GRUB2负责加载自己的core.img, 在core.img里读取hd0, 解析MBR里的分区信息, 并利用ext2模块找到配置文件, 显示主界面, 
+  先测试一下bochs的调试能力. bochs以调试模式启动后, 会自动停在BIOS中Reset代码, 地址为0xFFFFFFF0. 我们在bochs console里输入:
 
-并加载用户的选择内核文件(vmlinuz-xxx).
+{{{
+pb 0x00007c00
+}}}
 
-		loader和内核之间的协议, 在内核源码Document/x86/boot.txt里有详尽的描述.
+  在0x7c00设置一个断点, 这正式GRUB2 MBR代码的入口点. GRUB2负责加载自己的core.img, 在core.img里读取hd0, 解析MBR里的分区信息, 并利用ext2模块找到配置文件, 显示主界面, 并加载用户的选择内核文件(vmlinuz-xxx).
 
-		内核文件包括实模式代码和保护模式代码. loader读取内核文件的头部信息, 从而得知实模式和保护模式代码的大小. 保护模式部分被加载到0x100000(1MB), 实模式启动代码和数据/
 
-堆栈段位置可以重定位在0x10000开始的低端内存的任何位置.
+  loader和内核之间的协议, 在内核源码Document/x86/boot.txt里有详尽的描述.
 
-	[SIZE="4"]2.3 内核是怎样链成的...[/SIZE]
+  内核文件包括实模式代码和保护模式代码. loader读取内核文件的头部信息, 从而得知实模式和保护模式代码的大小. 保护模式部分被加载到0x100000(1MB), 实模式启动代码和数据堆栈段位置可以重定位在0x10000开始的低端内存的任何位置.
+
+==2.3 内核是怎样链成的==
 		
-		首先编译内核的保护模式代码, 生成源码根目录的vmlinux. 这是一个elf格式的文件, 可以用readelf查看.
-		[CODE]readelf -a /usr/src/linux/vmlinux | less[/CODE]
+  首先编译内核的保护模式代码, 生成源码根目录的vmlinux. 这是一个elf格式的文件, 可以用readelf查看.
+{{{
+readelf -a /usr/src/linux/vmlinux | less
+}}}
 
-		这个文件包含所有的符合信息, 容量巨大.
-		[CODE]ls -lh /usr/src/linux/vmlinux
--rwxr-xr-x 1 root root 4.8M Sep 10 17:28 /usr/src/linux/vmlinux[/CODE]
-		文件内容会在后面章节细述.
+  这个文件包含所有的符合信息, 容量巨大.
+{{{
+ls -lh /usr/src/linux/vmlinux
+-rwxr-xr-x 1 root root 4.8M Sep 10 17:28 /usr/src/linux/vmlinux
+}}}
+  文件内容会在后面章节细述.
 
-		接着vmlinux洗净压缩. 这个工作在 arch/x86/boot/compressed目录进行. 读Makefile可以看到先进行objcopy操作, 在compressed目录下生成vmlinux.bin.
-		[CODE]ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
--rwxr-xr-x 1 root root 3.7M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin[/CODE]
-		因为去掉了调试信息, 文件稍小了一些.
+  接着将vmlinux洗净压缩. 这个工作在 arch/x86/boot/compressed目录进行. 读Makefile可以看到先进行objcopy操作, 在compressed目录下生成vmlinux.bin.
+{{{
+ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
+-rwxr-xr-x 1 root root 3.7M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin
+}}}
+  因为去掉了调试信息, 文件稍小了一些.
 
-		接着根据用户的选择进行压缩, 目前支持gz, bz2, lzma三种方式. 我用默认方式, 生成vimlinux.bin.gz.
-		[CODE]#ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz
--rw-r--r-- 1 root root 1.9M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz[/CODE]
-		可以看到也有近50%的压缩率.
+  接着根据用户的选择进行压缩, 目前支持gz, bz2, lzma三种方式. 我用默认方式, 生成vimlinux.bin.gz.
 
-		紧接着加入自解压部分, 生成新的vmlinux.
-		[CODE]ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux
--rwxr-xr-x 1 root root 2.0M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux[/CODE]
-		这也是一个elf文件, 可以用readelf查看.
+{{{
+#ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz
+-rw-r--r-- 1 root root 1.9M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux.bin.gz
+}}}
+  可以看到也有近50%的压缩率.
+
+  紧接着加入自解压部分, 生成新的vmlinux.
+
+{{{
+ls -lh /usr/src/linux/arch/x86/boot/compressed/vmlinux
+-rwxr-xr-x 1 root root 2.0M Sep 10 17:28 /usr/src/linux/arch/x86/boot/compressed/vmlinux
+}}}
+
+  这也是一个elf文件, 可以用readelf查看.
 
 
-		接着工作转移到boot目录, 对上面的vmlinux进行strip操作, 生成二进制格式的vmlinux.bin. 这里面包括全部的包含模式代码, 启动时第一条语句会被加载到0x100000(1MB).
-		然后编译实模式代码, 包括已无用的引导扇区和setup部分, 生成setup.elf. 然后进行strip, 生成setup.bin.
+  接着工作转移到boot目录, 对上面的vmlinux进行strip操作, 生成二进制格式的vmlinux.bin. 这里面包括全部的包含模式代码, 启动时第一条语句会被加载到0x100000(1MB).
+
+  然后编译实模式代码, 包括已无用的引导扇区和setup部分, 生成setup.elf. 然后进行strip, 生成setup.bin.
 		
-		最后, 利用内核工具"build", 将setup.bin和vmlinux.bin拷贝在一起, 并填上必要的信息如setup部分的大小等, grub等引导程序可以使用的bzImage诞生了.
+  最后, 利用内核工具"build", 将setup.bin和vmlinux.bin拷贝在一起, 并填上必要的信息如setup部分的大小等, grub等引导程序可以使用的bzImage诞生了.
 
 
-	[SIZE="4"]2.3 内核实模式代码[/SIZE]
-		实模式代码位于arch/x86/boot. 记得Linux2.6.18之前所有的代码都用汇编写成, 2.6.18之后大部分替换成了C. 
-		入口点在header.S文件, 即包含了无用的"引导扇区代码", 也包含了引导程序能识别的头部信息. 第一条可执行语句在偏移0x200的位置(跳过引导扇区), 执行必要的初始化操作, 然后将控制权交给C程序, 即main.c里的main()函数.
-		有了main()函数, 接下来的过程就像读文档一样方便了:) 利用实模式的优势, 调用BIOS执行必要的初始化和参数获取, 并将结果存到结构体boot_params.
-		在main()的最后调用go_to_protected_mode(). 这个函数位于pm.c, 它打开A20, 初始化协处理器(如果有), 关掉所有中断, 设置空的IDT和最基本的GDT, 接着调用protected_mode_jump跳转到保护模式的入口代码0x100000. 这个函数定义在pmjump.S. 注意跳转的时候, boot_params被放在esi寄存器.
+==2.3 内核实模式代码==
 
-	[SIZE="4"]2.4 保护模式:自解压过程[/SIZE]
-		内核保护模式的入口在arch/x86/boot/compressed/head_32.S (32位架构). 我们利用bochs的调试功能, 跟着走一遍:
+  实模式代码位于arch/x86/boot. 记得Linux2.6.18之前所有的代码都用汇编写成, 2.6.18之后大部分替换成了C. 
 
-		[CODE]pb 0x100000
-c[/CODE]
+  入口点在header.S文件, 即包含了无用的"引导扇区代码", 也包含了引导程序能识别的头部信息. 第一条可执行语句在偏移0x200的位置(跳过引导扇区), 执行必要的初始化操作, 然后将控制权交给C程序, 即main.c里的main()函数.
 
-		接着grub会运行, 选择我们编译的kernel, 等实模式代码运行完毕, 就会断在保护模式的入口. 反汇编看一下:
+  有了main()函数, 接下来的过程就像读文档一样方便了:) 利用实模式的优势, 调用BIOS执行必要的初始化和参数获取, 并将结果存到结构体boot_params.
 
-		[CODE]u /16 0x100000[/CODE]
+  在main()的最后调用go_to_protected_mode(). 这个函数位于pm.c, 它打开A20, 初始化协处理器(如果有), 关掉所有中断, 设置空的IDT和最基本的GDT, 接着调用protected_mode_jump跳转到保护模式的入口代码0x100000. 这个函数定义在pmjump.S. 注意跳转的时候, boot_params被放在esi寄存器.
 
-		可以看到反汇编代码和head_32.S一样. (如果不一样.. 报告一起UFO目击事件吧)
+==2.4 保护模式:自解压过程==
 
-		在这里, esi还是指向来自与实模式的boot_params. 接下来的任务, 就是拷贝和解压. 目的地在0x1000000(16MB). 解压部分是C语言函数.
-		最后跳转到0x1000000.	
+  内核保护模式的入口在arch/x86/boot/compressed/head_32.S (32位架构). 我们利用bochs的调试功能, 跟着走一遍:
 
+{{{
+pb 0x100000
+c
+}}}
 
-[SIZE="5"]3. 内核启动[/SIZE]
+  接着grub会运行, 选择我们编译的kernel, 等实模式代码运行完毕, 就会断在保护模式的入口. 反汇编看一下:
 
-	[SIZE="4"]3.1 平台相关的初始化[/SIZE]
-	我们将断点设在内核的入口点 0x1000000(16MB), 继续执行, 内核会自己解压, 并停在入口点.
-	执行反汇编操作:
+{{{
+u /16 0x100000
+}}}
 
-	[CODE]u /16 0x1000000[/CODE]
-	对应的汇编文件在 arch/x86/kernel/head_32.S. 这个是真正的内核入口点. 在这里初始化页表, 并启动分页机制. 打开SMP的化, 进行必要的CPU初始化. 然后初始化IDT, 检查CPU类型, 最后跳转到C语言的i386_start_kernel(). 这个函数位于head32.c. 它保留一些内存并做标记后, 跳转到平台无关的start_kernel(), 位于init/main.c.
+  可以看到反汇编代码和head_32.S一样. (如果不一样.. 报告一起UFO目击事件吧)
 
-        <待细化, 欢迎补充>
+  在这里, esi还是指向来自与实模式的boot_params. 接下来的任务, 就是拷贝和解压. 目的地在0x1000000(16MB). 解压部分是C语言函数.
+
+  最后跳转到0x1000000.	
 
 
-	[SIZE="4"]3.2 平台无关的初始化[/SIZE]
+=3. 内核启动=
+
+==3.1 平台相关的初始化==
+
+  我们将断点设在内核的入口点 0x1000000(16MB), 继续执行, 内核会自己解压, 并停在入口点.
+
+  执行反汇编操作:
+
+{{{
+u /16 0x1000000
+}}}
+
+  对应的汇编文件在 arch/x86/kernel/head_32.S. 这个是真正的内核入口点. 在这里初始化页表, 并启动分页机制. 打开SMP的化, 进行必要的CPU初始化. 然后初始化IDT, 检查CPU类型, 最后跳转到C语言的i386_start_kernel(). 这个函数位于head32.c. 它保留一些内存并做标记后, 跳转到平台无关的start_kernel(), 位于init/main.c.
+
+<待细化, 欢迎补充>
+
+
+==3.2 平台无关的初始化==
 	start_kernel()是一个高层函数, 与架构无关, 但指挥架构相关的代码完成剩余的初始化部分.
 
 	<待续>
