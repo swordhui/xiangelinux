@@ -27,4 +27,64 @@
         *6. CPU 通用寄存器1 (r1)必须是 ARM Linux machine type (关于machine type, 我们后面会有讲解)
         *7. CPU 通用寄存器2 (r2) 必须是 kernel parameter list 的物理地址(parameter list 是由boot loader传递给kernel,用来描述设备信息属性的列表,详细内容可参考"Booting ARM Linux"文档).
 
+=二. starting kernel=
+
+首先，我们先对几个重要的宏进行说明(我们针对有MMU的情况)：
+
+     宏                 位置                           默认值          说明
+KERNEL_RAM_ADDR  arch/arm/kernel/head.S +26          0xc0008000      kernel在RAM中的的虚拟地址
+PAGE_OFFSET      include/asm-arm/memeory.h +50       0xc0000000      内核空间的起始虚拟地址
+TEXT_OFFSET      arch/arm/Makefile +137              0x00008000      内核相对于存储空间的偏移
+TEXTADDR         arch/arm/kernel/head.S +49          0xc0008000      kernel的起始虚拟地址
+PHYS_OFFSET      include/asm-arm/arch-xxx/memory.h   平台相关        RAM的起始物理地址
+
+
+        内核的入口是stext,这是在arch/arm/kernel/vmlinux.lds.S中定义的:
+        00011: ENTRY(stext)
+        对于vmlinux.lds.S,这是ld script文件,此文件的格式和汇编及C程序都不同,本文不对ld script作过多的介绍,只对内核中用到的内容进行讲解,关于ld的详细内容可以参考ld.info
+        这里的ENTRY(stext) 表示程序的入口是在符号stext.
+        而符号stext是在arch/arm/kernel/head.S中定义的:
+        下面我们将arm linux boot的主要代码列出来进行一个概括的介绍,然后,我们会逐个的进行详细的讲解.
+       
+        在arch/arm/kernel/head.S中 72 - 94 行,是arm linux boot的主代码:
+{{{
+
+00072: ENTRY(stext)                                                        
+00073:         msr        cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
+00074:                                                 @ and irqs disabled        
+00075:         mrc        p15, 0, r9, c0, c0                @ get processor id         
+00076:         bl        __lookup_processor_type                @ r5=procinfo r9=cpuid     
+00077:         movs        r10, r5                                @ invalid processor (r5=0)?
+00078:         beq        __error_p                        @ yes, error 'p'           
+00079:         bl        __lookup_machine_type                @ r5=machinfo              
+00080:         movs        r8, r5                                @ invalid machine (r5=0)?  
+00081:         beq        __error_a                        @ yes, error 'a'           
+00082:         bl        __create_page_tables                                       
+00083:                                                                     
+00084:         /*                                                                 
+00085:          * The following calls CPU specific code in a position independent
+00086:          * manner.  See arch/arm/mm/proc-*.S for details.  r10 = base of   
+00087:          * xxx_proc_info structure selected by __lookup_machine_type      
+00088:          * above.  On return, the CPU will be ready for the MMU to be      
+00089:          * turned on, and r0 will hold the CPU control register value.     
+00090:          */                                                               
+00091:         ldr        r13, __switch_data                @ address to jump to after
+00092:                                                 @ mmu has been enabled     
+00093:         adr        lr, __enable_mmu                @ return (PIC) address     
+00094:         add        pc, r10, #PROCINFO_INITFUNC                                
+}}}
+
+其中,73行是确保kernel运行在SVC模式下,并且IRQ和FIRQ中断已经关闭,这样做是很谨慎的.
+
+arm linux boot的主线可以概括为以下几个步骤:
+        1. 确定 processor type                        (75 - 78行)
+        2. 确定 machine type                        (79 - 81行)
+        3. 创建页表                                (82行)     
+        4. 调用平台特定的__cpu_flush函数        (在struct proc_info_list中)        (94 行)                           
+        5. 开启mmu                                (93行)
+        6. 切换数据                                 (91行)
+       
+        最终跳转到start_kernel                        (在__switch_data的结束的时候,调用了 b        start_kernel)
+
+下面,我们按照这个主线,逐步的分析Code.
 
