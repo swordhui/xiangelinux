@@ -570,4 +570,227 @@ L1 主页表将4 GB 的地址空间分成若干个1 MB的段(section),因此L1�
 
 上面这三行是用来设置RAM中第一兆虚拟地址的页表. 之所以要设置这个页表项的原因是RAM的第一兆内存中可能存储着boot params.
 
-这样,kernel所需要的基本的页表我们都设置完了, 如下图所示:
+这样,kernel所需要的基本的页表我们都设置完了, 如下图所示
+
+[http://xiangelinux.googlecode.com/files/armmmu2.gif]
+
+==4. 调用平台特定的 __cpu_flush 函数==
+
+当 __create_page_tables 返回之后
+
+此时,一些特定寄存器的值如下所示:
+* r4 = pgtbl              (page table 的物理基地址)
+* r8 = machine info       (struct machine_desc的基地址)
+* r9 = cpu id             (通过cp15协处理器获得的cpu id)
+* r10 = procinfo          (struct proc_info_list的基地址)
+
+
+在我们需要在开启mmu之前,做一些必须的工作:清除ICache, 清除 DCache, 清除 Writebuffer, 清除TLB等.
+
+这些一般是通过cp15协处理器来实现的,并且是平台相关的. 这就是 __cpu_flush 需要做的工作.
+        
+        在 arch/arm/kernel/head.S中
+
+{{{
+00091:         ldr        r13, __switch_data                @ address to jump to after
+00092:                                                 @ mmu has been enabled     
+00093:         adr        lr, __enable_mmu                @ return (PIC) address     
+00094:         add        pc, r10, #PROCINFO_INITFUNC            
+}}}
+
+第91行: 将r13设置为 __switch_data 的地址
+
+第92行: 将lr设置为 __enable_mmu 的地址
+
+第93行: r10存储的是procinfo的基地址, PROCINFO_INITFUNC是在 arch/arm/kernel/asm-offset.c 中107行定义.
+        则该行将pc设为 proc_info_list的 __cpu_flush 函数的地址, 即下面跳转到该函数.
+        在分析 __lookup_processor_type 的时候,我们已经知道,对于 ARM926EJS 来说,其__cpu_flush指向的是函数 __arm926_setup
+
+        
+        下面我们来分析函数 __arm926_setup
+        
+        在 arch/arm/mm/proc-arm926.S 中:
+
+{{{
+00391:         .type        __arm926_setup, #function
+00392: __arm926_setup:
+00393:         mov        r0, #0
+00394:         mcr        p15, 0, r0, c7, c7                @ invalidate I,D caches on v4
+00395:         mcr        p15, 0, r0, c7, c10, 4                @ drain write buffer on v4
+00396: #ifdef CONFIG_MMU
+00397:         mcr        p15, 0, r0, c8, c7                @ invalidate I,D TLBs on v4
+00398: #endif
+00399:
+00400:
+00401: #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
+00402:         mov        r0, #4                                @ disable write-back on caches explicitly
+00403:         mcr        p15, 7, r0, c15, c0, 0
+00404: #endif
+00405:
+00406:         adr        r5, arm926_crval
+00407:         ldmia        r5, {r5, r6}
+00408:         mrc        p15, 0, r0, c1, c0                @ get control register v4
+00409:         bic        r0, r0, r5
+00410:         orr        r0, r0, r6
+00411: #ifdef CONFIG_CPU_CACHE_ROUND_ROBIN
+00412:         orr        r0, r0, #0x4000                        @ .1.. .... .... ....
+00413: #endif
+00414:         mov        pc, lr        
+00415:         .size        __arm926_setup, . - __arm926_setup
+00416:
+00417:         /*
+00418:          *  R
+00419:          * .RVI ZFRS BLDP WCAM
+00420:          * .011 0001 ..11 0101
+00421:          *
+00422:          */
+00423:         .type        arm926_crval, #object
+00424: arm926_crval:
+00425:         crval        clear=0x00007f3f, mmuset=0x00003135, ucset=0x00001134
+}}}
+
+
+
+第391, 392行: 是函数声明
+
+第393行: 将r0设置为0
+
+第394行: 清除(invalidate)Instruction Cache 和 Data Cache.
+
+第395行: 清除(drain) Write Buffer.
+
+第396 - 398行: 如果有配置了MMU,则需要清除(invalidate)Instruction TLB 和Data TLB
+
+接下来,是对控制寄存器c1进行配置,请参考 ARM926 TRM.
+
+第401 - 404行: 如果配置了Data Cache使用writethrough方式, 需要关掉write-back.
+                 
+第406行:　取arm926_crval的地址到r5中, arm926_crval 在第424行
+   
+第407行:　这里我们需要看一下424和425行,其中用到了宏crval,crval是在 arch/arm/mm/proc-macro.S 中:
+
+{{{
+        00053:         .macro        crval, clear, mmuset, ucset
+        00054: #ifdef CONFIG_MMU
+        00055:         .word        \clear
+        00056:         .word        \mmuset
+        00057: #else
+        00058:         .word        \clear
+        00059:         .word        \ucset
+        00060: #endif
+        00061:         .endm
+}}}
+
+        配合425行,我们可以看出,首先在arm926_crval的地址处存放了clear的值,然后接下来的地址存放了mmuset的值(对于配置了 MMU的情况)               
+        
+所以,在407行中,我们将clear和mmuset的值分别存到了r5, r6中
+
+第408行:　获得控制寄存器c1的值
+
+第409行:  将r0中的 clear (r5) 对应的位都清除掉
+
+第410行:　设置r0中 mmuset (r6) 对应的位
+
+第411 - 413行:　如果配置了使用 round robin方式,需要设置控制寄存器c1的 Bit[16]
+
+第412行: 取lr的值到pc中.
+而lr中的值存放的是 __enable_mmu 的地址(arch/arm/kernel/head.S 93行),所以,接下来就是跳转到函数 __enable_mmu
+
+==5. 开启mmu==
+
+        开启mmu是又函数 __enable_mmu 实现的.
+        
+        在进入 __enable_mmu 的时候, r0中已经存放了控制寄存器c1的一些配置(在上一步中进行的设置), 但是并没有真正的打开mmu,
+
+        在 __enable_mmu 中,我们将打开mmu.
+        
+        此时,一些特定寄存器的值如下所示:
+
+* r0 = c1 parameters      (用来配置控制寄存器的参数)        
+* r4 = pgtbl              (page table 的物理基地址)
+* r8 = machine info       (struct machine_desc的基地址)
+* r9 = cpu id             (通过cp15协处理器获得的cpu id)
+* r10 = procinfo          (struct proc_info_list的基地址)
+        
+        在 arch/arm/kernel/head.S 中:
+
+{{{
+00146:         .type        __enable_mmu, %function
+00147: __enable_mmu:
+00148: #ifdef CONFIG_ALIGNMENT_TRAP
+00149:         orr        r0, r0, #CR_A
+00150: #else
+00151:         bic        r0, r0, #CR_A
+00152: #endif
+00153: #ifdef CONFIG_CPU_DCACHE_DISABLE
+00154:         bic        r0, r0, #CR_C
+00155: #endif
+00156: #ifdef CONFIG_CPU_BPREDICT_DISABLE
+00157:         bic        r0, r0, #CR_Z
+00158: #endif
+00159: #ifdef CONFIG_CPU_ICACHE_DISABLE
+00160:         bic        r0, r0, #CR_I
+00161: #endif
+00162:         mov        r5, #(domain_val(DOMAIN_USER, DOMAIN_MANAGER) | \
+00163:                       domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \
+00164:                       domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \
+00165:                       domain_val(DOMAIN_IO, DOMAIN_CLIENT))
+00166:         mcr        p15, 0, r5, c3, c0, 0                @ load domain access register
+00167:         mcr        p15, 0, r4, c2, c0, 0                @ load page table pointer
+00168:         b        __turn_mmu_on
+00169:
+00170: /*
+00171:  * Enable the MMU.  This completely changes the structure of the visible
+00172:  * memory space.  You will not be able to trace execution through this.
+00173:  * If you have an enquiry about this, *please* check the linux-arm-kernel
+00174:  * mailing list archives BEFORE sending another post to the list.
+00175:  *
+00176:  *  r0  = cp#15 control register
+00177:  *  r13 = *virtual* address to jump to upon completion
+00178:  *
+00179:  * other registers depend on the function called upon completion
+00180:  */
+00181:         .align        5
+00182:         .type        __turn_mmu_on, %function
+00183: __turn_mmu_on:
+00184:         mov        r0, r0
+00185:         mcr        p15, 0, r0, c1, c0, 0                @ write control reg
+00186:         mrc        p15, 0, r3, c0, c0, 0                @ read id reg
+00187:         mov        r3, r3
+00188:         mov        r3, r3
+00189:         mov        pc, r13
+}}}
+        
+第146, 147行: 函数声明
+
+第148 - 161行:  根据相应的配置,设置r0中的相应的Bit. (r0 将用来配置控制寄存器c1)
+
+第162 - 165行: 设置 domain 参数r5.(r5 将用来配置domain)
+
+第166行: 配置 domain (详细信息清参考arm相关手册)
+
+第167行: 配置页表在存储器中的位置(set ttb).这里页表的基地址是r4, 通过写cp15的c2寄存器来设置页表基地址.
+
+第168行: 跳转到 __turn_mmu_on. 从名称我们可以猜到,下面是要真正打开mmu了.
+        (继续向下看,我们会发现,__turn_mmu_on就下当前代码的下方,为什么要跳转一下呢? 这是有原因的. go on)
+
+第169 - 180行: 空行和注释. 这里的注释我们可以看到, r0是cp15控制寄存器的内容, r13存储了完成后需要跳转的虚拟地址(因为完成后mmu已经打开了,都是虚拟地址了).
+
+第181行: .algin 5 这句是cache line对齐. 我们可以看到下面一行就是 __turn_mmu_on, 之所以
+
+第182 - 183行:  __turn_mmu_on 的函数声明. 这里我们可以看到, __turn_mmu_on 是紧接着上面第168行的跳转指令的,只是中间在第181行多了一个cache line对齐.
+
+        这么做的原因是: 下面我们要进行真正的打开mmu操作了, 我们要把打开mmu的操作放到一个单独的cache line上. 而在之前的"启动条件"一节我们说了,I Cache是可以打开也可以关闭的,这里这么做的原因是要保证在I Cache打开的时候,打开mmu的操作也能正常执行.
+
+第184行: 这是一个空操作,相当于nop. 在arm中,nop操作经常用指令 mov rd, rd 来实现.
+        注意: 为什么这里要有一个nop,我思考了很长时间,这里是我的猜测,可能不是正确的:
+        因为之前设置了页表基地址(set ttb),到下一行(185行)打开mmu操作,中间的指令序列是这样的:
+
+        * set ttb(第167行)
+        * branch(第168行)
+        * nop(第184行)
+        * enable mmu(第185行)
+
+        对于arm的五级流水线: fetch - decode - execute - memory - write
+        
+        他们执行的情况如下图所示:
