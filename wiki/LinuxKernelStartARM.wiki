@@ -794,3 +794,179 @@ L1 主页表将4 GB 的地址空间分成若干个1 MB的段(section),因此L1�
         对于arm的五级流水线: fetch - decode - execute - memory - write
         
         他们执行的情况如下图所示:
+
+[http://xiangelinux.googlecode.com/files/armmmu3.gif]
+
+这里需要说明的是,branch操作会在3个cycle中完成,并且会导致重新取指.
+        
+        从这个图我们可以看出来,在enable mmu操作取指的时候, set ttb操作刚好完成.
+     
+        
+第185行: 写cp15的控制寄存器c1, 这里是打开mmu的操作,同时会打开cache等(根据r0相应的配置)
+
+第186行: 读取id寄存器.
+
+第187 - 188行: 两个nop.
+
+第189行: 取r13到pc中,我们前面已经看到了, r13中存储的是 __switch_data (在 arch/arm/kernel/head.S 91行),下面会跳到 __switch_data.
+
+第187,188行的两个nop是非常重要的,因为在185行打开mmu操作之后,要等到3个cycle之后才会生效,这和arm的流水线有关系.
+因而,在打开mmu操作之后的加了两个nop操作.
+
+==6. 切换数据==
+
+        在 arch/arm/kernel/head-common.S 中:
+
+{{{
+00014:         .type        __switch_data, %object
+00015: __switch_data:
+00016:         .long        __mmap_switched
+00017:         .long        __data_loc                        @ r4
+00018:         .long        __data_start                        @ r5
+00019:         .long        __bss_start                        @ r6
+00020:         .long        _end                                @ r7
+00021:         .long        processor_id                        @ r4
+00022:         .long        __machine_arch_type                @ r5
+00023:         .long        cr_alignment                        @ r6
+00024:         .long        init_thread_union + THREAD_START_SP @ sp
+00025:
+00026: /*
+00027:  * The following fragment of code is executed with the MMU on in MMU mode,
+00028:  * and uses absolute addresses; this is not position independent.
+00029:  *
+00030:  *  r0  = cp#15 control register
+00031:  *  r1  = machine ID
+00032:  *  r9  = processor ID
+00033:  */
+00034:         .type        __mmap_switched, %function
+00035: __mmap_switched:
+00036:         adr        r3, __switch_data + 4
+00037:
+00038:         ldmia        r3!, {r4, r5, r6, r7}
+00039:         cmp        r4, r5                                @ Copy data segment if needed
+00040: 1:        cmpne        r5, r6
+00041:         ldrne        fp, [r4], #4
+00042:         strne        fp, [r5], #4
+00043:         bne        1b
+00044:
+00045:         mov        fp, #0                                @ Clear BSS (and zero fp)
+00046: 1:        cmp        r6, r7
+00047:         strcc        fp, [r6],#4
+00048:         bcc        1b
+00049:
+00050:         ldmia        r3, {r4, r5, r6, sp}
+00051:         str        r9, [r4]                        @ Save processor ID
+00052:         str        r1, [r5]                        @ Save machine type
+00053:         bic        r4, r0, #CR_A                        @ Clear 'A' bit
+00054:         stmia        r6, {r0, r4}                        @ Save control register values
+00055:         b        start_kernel
+}}}       
+
+第14, 15行: 函数声明
+
+第16 - 24行: 定义了一些地址,例如第16行存储的是 __mmap_switched 的地址, 第17行存储的是 __data_loc 的地址 ......
+
+第34, 35行: 函数 __mmap_switched
+
+第36行: 取 __switch_data + 4的地址到r3. 从上文可以看到这个地址就是第17行的地址.
+
+第37行:　依次取出从第17行到第20行的地址,存储到r4, r5, r6, r7 中. 并且累加r3的值.当执行完后, r3指向了第21行的位置.
+        对照上文,我们可以得知:
+
+                * r4 - __data_loc
+                * r5 - __data_start
+                * r6 - __bss_start
+                * r7 - _end
+        这几个符号都是在 arch/arm/kernel/vmlinux.lds.S 中定义的变量:
+
+{{{
+        00102: #ifdef CONFIG_XIP_KERNEL
+        00103:         __data_loc = ALIGN(4);                /* location in binary */
+        00104:         . = PAGE_OFFSET + TEXT_OFFSET;
+        00105: #else
+        00106:         . = ALIGN(THREAD_SIZE);
+        00107:         __data_loc = .;
+        00108: #endif
+        00109:
+        00110:         .data : AT(__data_loc) {
+        00111:                 __data_start = .;        /* address in memory */
+        00112:
+        00113:                 /*
+        00114:                  * first, the init task union, aligned
+        00115:                  * to an 8192 byte boundary.
+        00116:                  */
+        00117:                 *(.init.task)
+        
+                ......
+               
+        00158:         .bss : {
+        00159:                 __bss_start = .;        /* BSS                                */
+        00160:                 *(.bss)
+        00161:                 *(COMMON)
+        00162:                 _end = .;
+        00163:         }
+
+}}}
+        
+        对于这四个变量,我们简单的介绍一下:
+        * __data_loc 是数据存放的位置
+        * __data_start 是数据开始的位置
+        * __bss_start 是bss开始的位置
+        * _end 是bss结束的位置, 也是内核结束的位置
+        
+        其中对第110行的指令讲解一下: 这里定义了.data 段,后面的AT(__data_loc) 的意思是这部分的内容是在__data_loc中存储的(要注意,储存的位置和链接的位置是可以不相同的).
+        关于 AT 详细的信息请参考 ld.info
+        
+        
+        
+        
+第38行: 比较 __data_loc 和 __data_start
+
+第39 - 43行: 这几行是判断数据存储的位置和数据的开始的位置是否相等,如果不相等,则需要搬运数据,从 __data_loc 将数据搬到 __data_start.
+        其中 __bss_start 是bss的开始的位置,也标志了 data 结束的位置,因而用其作为判断数据是否搬运完成.
+
+第45 - 48行:　是清除 bss 段的内容,将其都置成0. 这里使用 _end 来判断 bss 的结束位置.
+
+第50行: 因为在第38行的时候,r3被更新到指向第21行的位置.因而这里取得r4, r5, r6, sp的值分别是:
+        * r4 - processor_id
+        * r5 - __machine_arch_type
+        * r6 - cr_alignment
+        * sp - init_thread_union + THREAD_START_SP
+
+        processor_id 和 __machine_arch_type 这两个变量是在 arch/arm/kernel/setup.c 中 第62, 63行中定义的.
+        cr_alignment 是在 arch/arm/kernel/entry-armv.S 中定义的:
+
+{{{
+        00182:         .globl        cr_alignment
+        00183:         .globl        cr_no_alignment
+        00184: cr_alignment:
+        00185:         .space        4
+        00186: cr_no_alignment:
+        00187:         .space        4
+}}}
+        
+        init_thread_union 是 init进程的基地址. 在 arch/arm/kernel/init_task.c 中:
+
+{{{
+        00033: union thread_union init_thread_union
+        00034:         __attribute__((__section__(".init.task"))) =
+        00035:                 { INIT_THREAD_INFO(init_task) }; 
+}}}
+
+        对照 vmlnux.lds.S 中的 的117行,我们可以知道init task是存放在 .data 段的开始8k, 并且是THREAD_SIZE(8k)对齐的
+
+第51行: 将r9中存放的 processor id (在arch/arm/kernel/head.S 75行) 赋值给变量 processor_id
+
+第52行: 将r1中存放的 machine id (见"启动条件"一节)赋值给变量　__machine_arch_type
+
+第53行: 清除r0中的 CR_A 位并将值存到r4中. CR_A 是在 include/asm-arm/system.h 21行定义, 是cp15控制寄存器c1的Bit[1](alignment fault enable/disable)
+
+第54行: 这一行是存储控制寄存器的值.
+        从上面 arch/arm/kernel/entry-armv.S 的代码我们可以得知.
+        这一句是将r0存储到了 cr_alignment 中,将r4存储到了 cr_no_alignment 中.
+
+第55行: 最终跳转到start_kernel
+
+===FIN===
+
+
