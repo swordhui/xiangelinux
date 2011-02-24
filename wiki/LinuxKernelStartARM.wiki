@@ -87,3 +87,157 @@ arm linux boot的主线可以概括为以下几个步骤:
         最终跳转到start_kernel                        (在__switch_data的结束的时候,调用了 b        start_kernel)
 
 下面,我们按照这个主线,逐步的分析Code.
+
+==1. 确定 processor type==
+       
+
+    arch/arm/kernel/head.S中:
+
+{{{
+00075:         mrc        p15, 0, r9, c0, c0                @ get processor id         
+00076:         bl        __lookup_processor_type                @ r5=procinfo r9=cpuid     
+00077:         movs        r10, r5                                @ invalid processor (r5=0)?
+00078:         beq        __error_p                        @ yes, error 'p'           
+}}}
+
+75行: 通过cp15协处理器的c0寄存器来获得processor id的指令. 关于cp15的详细内容可参考相关的arm手册
+
+76行: 跳转到__lookup_processor_type.在__lookup_processor_type中,会把processor type 存储在r5中
+
+77,78行: 判断r5中的processor type是否是0,如果是0,说明是无效的processor type,跳转到__error_p(出错)
+
+__lookup_processor_type 函数主要是根据从cpu中获得的processor id和系统中的proc_info进行匹配,将匹配到的proc_info_list的基地址存到r5中, 0表示没有找到对应的processor type.
+
+下面我们分析__lookup_processor_type函数
+        arch/arm/kernel/head-common.S中:
+
+{{{     
+00145:         .type        __lookup_processor_type, %function
+00146: __lookup_processor_type:
+00147:         adr        r3, 3f
+00148:         ldmda        r3, {r5 - r7}
+00149:         sub        r3, r3, r7                        @ get offset between virt&phys
+00150:         add        r5, r5, r3                        @ convert virt addresses to
+00151:         add        r6, r6, r3                        @ physical address space
+00152: 1:        ldmia        r5, {r3, r4}                        @ value, mask
+00153:         and        r4, r4, r9                        @ mask wanted bits
+00154:         teq        r3, r4
+00155:         beq        2f
+00156:         add        r5, r5, #PROC_INFO_SZ                @ sizeof(proc_info_list)
+00157:         cmp        r5, r6
+00158:         blo        1b
+00159:         mov        r5, #0                                @ unknown processor
+00160: 2:        mov        pc, lr
+00161:
+00162: /*
+00163:  * This provides a C-API version of the above function.
+00164:  */
+00165: ENTRY(lookup_processor_type)
+00166:         stmfd        sp!, {r4 - r7, r9, lr}
+00167:         mov        r9, r0
+00168:         bl        __lookup_processor_type
+00169:         mov        r0, r5
+00170:         ldmfd        sp!, {r4 - r7, r9, pc}
+00171:
+00172: /*
+00173:  * Look in include/asm-arm/procinfo.h and arch/arm/kernel/arch.[ch] for
+00174:  * more information about the __proc_info and __arch_info structures.
+00175:  */
+00176:         .long        __proc_info_begin
+00177:         .long        __proc_info_end
+00178: 3:        .long        .
+00179:         .long        __arch_info_begin
+00180:         .long        __arch_info_end
+}}}
+       
+   
+145, 146行是函数定义
+
+147行: 取地址指令,这里的3f是向前symbol名称是3的位置,即第178行,将该地址存入r3.
+        这里需要注意的是,adr指令取址,获得的是基于pc的一个地址,要格外注意,这个地址是3f处的"运行时地址",由于此时MMU还没有打开,也可以理解成物理地址(实地址).(详细内容可参考arm指令手册)
+        
+148行: 因为r3中的地址是178行的位置的地址,因而执行完后:
+        r5存的是176行符号 __proc_info_begin的地址;
+        r6存的是177行符号 __proc_info_end的地址;
+        r7存的是3f处的地址.
+        这里需要注意链接地址和运行时地址的区别. r3存储的是运行时地址(物理地址),而r7中存储的是链接地址(虚拟地址).
+        
+                __proc_info_begin和__proc_info_end是在arch/arm/kernel/vmlinux.lds.S中:
+
+{{{
+        00031:                __proc_info_begin = .;
+        00032:                        *(.proc.info.init)
+        00033:                __proc_info_end = .;
+}}}
+
+        这里是声明了两个变量:__proc_info_begin 和 __proc_info_end,其中等号后面的"."是location counter(详细内容请参考ld.info)
+        这三行的意思是: __proc_info_begin 的位置上,放置所有文件中的 ".proc.info.init" 段的内容,然后紧接着是 __proc_info_end 的位置.
+
+        kernel 使用struct proc_info_list来描述processor type.
+                在 include/asm-arm/procinfo.h 中:
+
+{{{
+        00029: struct proc_info_list {
+        00030:         unsigned int                cpu_val;
+        00031:         unsigned int                cpu_mask;
+        00032:         unsigned long                __cpu_mm_mmu_flags;        /* used by head.S */
+        00033:         unsigned long                __cpu_io_mmu_flags;        /* used by head.S */
+        00034:         unsigned long                __cpu_flush;                /* used by head.S */
+        00035:         const char                *arch_name;
+        00036:         const char                *elf_name;
+        00037:         unsigned int                elf_hwcap;
+        00038:         const char                *cpu_name;
+        00039:         struct processor        *proc;
+        00040:         struct cpu_tlb_fns        *tlb;
+        00041:         struct cpu_user_fns        *user;
+        00042:         struct cpu_cache_fns        *cache;
+        00043: };
+        
+        我们当前以at91为例,其processor是926的.
+                在arch/arm/mm/proc-arm926.S 中:
+        00464:         .section ".proc.info.init", #alloc, #execinstr
+        00465:
+        00466:         .type        __arm926_proc_info,#object
+        00467: __arm926_proc_info:
+        00468:         .long        0x41069260                        @ ARM926EJ-S (v5TEJ)
+        00469:         .long        0xff0ffff0
+        00470:         .long   PMD_TYPE_SECT | \
+        00471:                 PMD_SECT_BUFFERABLE | \
+        00472:                 PMD_SECT_CACHEABLE | \
+        00473:                 PMD_BIT4 | \
+        00474:                 PMD_SECT_AP_WRITE | \
+        00475:                 PMD_SECT_AP_READ
+        00476:         .long   PMD_TYPE_SECT | \
+        00477:                 PMD_BIT4 | \
+        00478:                 PMD_SECT_AP_WRITE | \
+        00479:                 PMD_SECT_AP_READ
+        00480:         b        __arm926_setup
+        00481:         .long        cpu_arch_name
+        00482:         .long        cpu_elf_name
+        00483:         .long        HWCAP_SWP|HWCAP_HALF|HWCAP_THUMB|HWCAP_FAST_MULT|HWCAP_VFP|HWCAP_EDSP|HWCAP_JAVA
+        00484:         .long        cpu_arm926_name
+        00485:         .long        arm926_processor_functions
+        00486:         .long        v4wbi_tlb_fns
+        00487:         .long        v4wb_user_fns
+        00488:         .long        arm926_cache_fns
+        00489:         .size        __arm926_proc_info, . - __arm926_proc_info
+}}}
+        
+        从464行,我们可以看到 __arm926_proc_info 被放到了".proc.info.init"段中.
+        对照struct proc_info_list,我们可以看到 __cpu_flush的定义是在480行,即__arm926_setup.(我们将在"4. 调用平台特定的__cpu_flush函数"一节中详细分析这部分的内容.)
+        
+从以上的内容我们可以看出: r5中的__proc_info_begin是proc_info_list的起始地址, r6中的__proc_info_end是proc_info_list的结束地址.
+
+149行: 从上面的分析我们可以知道r3中存储的是3f处的物理地址,而r7存储的是3f处的虚拟地址,这一行是计算当前程序运行的物理地址和虚拟地址的差值,将其保存到r3中.
+
+150行: 将r5存储的虚拟地址(__proc_info_begin)转换成物理地址
+151行: 将r6存储的虚拟地址(__proc_info_end)转换成物理地址
+152行: 对照struct proc_info_list,可以得知,这句是将当前proc_info的cpu_val和cpu_mask分别存r3, r4中
+153行: r9中存储了processor id(arch/arm/kernel/head.S中的75行),与r4的cpu_mask进行逻辑与操作,得到我们需要的值
+154行: 将153行中得到的值与r3中的cpu_val进行比较
+155行: 如果相等,说明我们找到了对应的processor type,跳到160行,返回
+156行: (如果不相等) , 将r5指向下一个proc_info,
+157行: 和r6比较,检查是否到了__proc_info_end.
+158行: 如果没有到__proc_info_end,表明还有proc_info配置,返回152行继续查找
+159行: 执行到这里,说明所有的proc_info都匹配过了,但是没有找到匹配的,将r5设置成0(unknown processor)
+160行: 返回
