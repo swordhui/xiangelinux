@@ -1,7 +1,7 @@
 #summary 其他文档列表
 
 =1. 弦歌Linux相关=
-||0||贡献列表||[contribute]||
+||0||[contribute 贡献列表]||Xiange Team||
 ||1||[LiveUSB LiveUSB构建方法]||swordhuihui||
 ||2||[dep_implement 解决包依赖关系的编码指南]||swordhuihui||
 
