@@ -241,3 +241,160 @@ __lookup_processor_type 函数主要是根据从cpu中获得的processor id和�
 158行: 如果没有到__proc_info_end,表明还有proc_info配置,返回152行继续查找
 159行: 执行到这里,说明所有的proc_info都匹配过了,但是没有找到匹配的,将r5设置成0(unknown processor)
 160行: 返回
+
+==2. 确定 machine type==
+
+    arch/arm/kernel/head.S中:
+
+{{{
+00079:         bl        __lookup_machine_type                @ r5=machinfo              
+00080:         movs        r8, r5                                @ invalid machine (r5=0)?  
+00081:         beq        __error_a                        @ yes, error 'a'  
+}}}
+
+79行: 跳转到__lookup_machine_type函数,在__lookup_machine_type中,会把struct machine_desc的基地址(machine type)存储在r5中
+80,81行: 将r5中的 machine_desc的基地址存储到r8中,并判断r5是否是0,如果是0,说明是无效的machine type,跳转到__error_a(出错)
+
+__lookup_machine_type 函数
+下面我们分析__lookup_machine_type 函数:
+
+        arch/arm/kernel/head-common.S中:
+
+{{{        
+00176:         .long        __proc_info_begin
+00177:         .long        __proc_info_end
+00178: 3:        .long        .
+00179:         .long        __arch_info_begin
+00180:         .long        __arch_info_end
+00181:
+00182: /*
+00183:  * Lookup machine architecture in the linker-build list of architectures.
+00184:  * Note that we can't use the absolute addresses for the __arch_info
+00185:  * lists since we aren't running with the MMU on (and therefore, we are
+00186:  * not in the correct address space).  We have to calculate the offset.
+00187:  *
+00188:  *  r1 = machine architecture number
+00189:  * Returns:
+00190:  *  r3, r4, r6 corrupted
+00191:  *  r5 = mach_info pointer in physical address space
+00192:  */       
+00193:         .type        __lookup_machine_type, %function
+00194: __lookup_machine_type:
+00195:         adr        r3, 3b
+00196:         ldmia        r3, {r4, r5, r6}
+00197:         sub        r3, r3, r4                        @ get offset between virt&phys
+00198:         add        r5, r5, r3                        @ convert virt addresses to
+00199:         add        r6, r6, r3                        @ physical address space
+00200: 1:        ldr        r3, [r5, #MACHINFO_TYPE]        @ get machine type
+00201:         teq        r3, r1                                @ matches loader number?
+00202:         beq        2f                                @ found
+00203:         add        r5, r5, #SIZEOF_MACHINE_DESC        @ next machine_desc
+00204:         cmp        r5, r6
+00205:         blo        1b
+00206:         mov        r5, #0                                @ unknown machine
+00207: 2:        mov        pc, lr
+}}}
+
+193, 194行: 函数声明
+
+195行: 取地址指令,这里的3b是向后symbol名称是3的位置,即第178行,将该地址存入r3.
+        和上面我们对__lookup_processor_type 函数的分析相同,r3中存放的是3b处物理地址.
+
+196行: 
+        * r3是3b处的地址,因而执行完后:
+        * r4存的是 3b处的地址
+        * r5存的是__arch_info_begin 的地址
+        * r6存的是__arch_info_end 的地址
+
+        __arch_info_begin 和 __arch_info_end是在 arch/arm/kernel/vmlinux.lds.S中:
+
+{{{
+        00034:                __arch_info_begin = .;
+        00035:                        *(.arch.info.init)
+        00036:                __arch_info_end = .;
+}}}
+     
+
+        这里是声明了两个变量:__arch_info_begin 和 __arch_info_end,其中等号后面的"."是location counter(详细内容请参考ld.info)
+        这三行的意思是: __arch_info_begin 的位置上,放置所有文件中的 ".arch.info.init" 段的内容,然后紧接着是 __arch_info_end 的位置.
+
+        kernel 使用struct machine_desc 来描述 machine type.
+        在 include/asm-arm/mach/arch.h 中:
+
+{{{
+        00017: struct machine_desc {
+        00018:         /*
+        00019:          * Note! The first four elements are used
+        00020:          * by assembler code in head-armv.S
+        00021:          */
+        00022:         unsigned int                nr;                /* architecture number        */
+        00023:         unsigned int                phys_io;        /* start of physical io        */
+        00024:         unsigned int                io_pg_offst;        /* byte offset for io
+        00025:                                                  * page tabe entry        */
+        00026:
+        00027:         const char                *name;                /* architecture name        */
+        00028:         unsigned long                boot_params;        /* tagged list                */
+        00029:
+        00030:         unsigned int                video_start;        /* start of video RAM        */
+        00031:         unsigned int                video_end;        /* end of video RAM        */
+        00032:
+        00033:         unsigned int                reserve_lp0 :1;        /* never has lp0        */
+        00034:         unsigned int                reserve_lp1 :1;        /* never has lp1        */
+        00035:         unsigned int                reserve_lp2 :1;        /* never has lp2        */
+        00036:         unsigned int                soft_reboot :1;        /* soft reboot                */
+        00037:         void                        (*fixup)(struct machine_desc *,
+        00038:                                          struct tag *, char **,
+        00039:                                          struct meminfo *);
+        00040:         void                        (*map_io)(void);/* IO mapping function        */
+        00041:         void                        (*init_irq)(void);
+        00042:         struct sys_timer        *timer;                /* system tick timer        */
+        00043:         void                        (*init_machine)(void);
+        00044: };
+        00045:
+        00046: /*
+        00047:  * Set of macros to define architecture features.  This is built into
+        00048:  * a table by the linker.
+        00049:  */
+        00050: #define MACHINE_START(_type,_name)                        \
+        00051: static const struct machine_desc __mach_desc_##_type        \
+        00052:  __attribute_used__                                        \
+        00053:  __attribute__((__section__(".arch.info.init")) = {        \
+        00054:         .nr                = MACH_TYPE_##_type,                \
+        00055:         .name                = _name,
+        00056:
+        00057: #define MACHINE_END                                \
+        00058: };        
+        
+        内核中,一般使用宏MACHINE_START来定义machine type.
+        对于at91, 在 arch/arm/mach-at91rm9200/board-ek.c 中:
+        00137: MACHINE_START(AT91RM9200EK, "Atmel AT91RM9200-EK"
+        00138:         /* Maintainer: SAN People/Atmel */
+        00139:         .phys_io        = AT91_BASE_SYS,
+        00140:         .io_pg_offst        = (AT91_VA_BASE_SYS >> 1 & 0xfffc,
+        00141:         .boot_params        = AT91_SDRAM_BASE + 0x100,
+        00142:         .timer                = &at91rm9200_timer,
+        00143:         .map_io                = ek_map_io,
+        00144:         .init_irq        = ek_init_irq,
+        00145:         .init_machine        = ek_board_init,
+        00146: MACHINE_END
+}}}
+
+
+197行: r3中存储的是3b处的物理地址,而r4中存储的是3b处的虚拟地址,这里计算处物理地址和虚拟地址的差值,保存到r3中
+
+198行: 将r5存储的虚拟地址(__arch_info_begin)转换成物理地址 
+           
+199行: 将r6存储的虚拟地址(__arch_info_end)转换成物理地址     
+       
+200行: MACHINFO_TYPE 在 arch/arm/kernel/asm-offset.c 101行定义, 这里是取 struct machine_desc中的nr(architecture number) 到r3中
+
+201行: 将r3中取到的machine type 和 r1中的 machine type(见前面的"启动条件"进行比较
+
+202行: 如果相同,说明找到了对应的machine type,跳转到207行的2f处,此时r5中存储了对应的struct machine_desc的基地址
+
+203行: (不相同), 取下一个machine_desc的地址
+
+204行: 和r6进行比较,检查是否到了__arch_info_end.
+205行: 如果不相同,说明还有machine_desc,返回200行继续查找.
+206行: 执行到这里,说明所有的machind_desc都查找完了,并且没有找到匹配的, 将r5设置成0(unknown machine).
+207行: 返回
