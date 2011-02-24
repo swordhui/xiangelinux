@@ -33,7 +33,7 @@
 
 
 ||宏||位置||默认值||说明||
-KERNEL_RAM_ADDR||arch/arm/kernel/head.S +26||0xc0008000||kernel在RAM中的的虚拟地址||
+||KERNEL_RAM_ADDR||arch/arm/kernel/head.S +26||0xc0008000||kernel在RAM中的的虚拟地址||
 ||PAGE_OFFSET||include/asm-arm/memeory.h +50||0xc0000000||内核空间的起始虚拟地址||
 ||TEXT_OFFSET||arch/arm/Makefile +137||0x00008000||内核相对于存储空间的偏移||
 ||TEXTADDR||arch/arm/kernel/head.S +49||0xc0008000||kernel的起始虚拟地址||
