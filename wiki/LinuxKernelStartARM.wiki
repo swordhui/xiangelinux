@@ -231,15 +231,25 @@ __lookup_processor_type 函数主要是根据从cpu中获得的processor id和�
 149行: 从上面的分析我们可以知道r3中存储的是3f处的物理地址,而r7存储的是3f处的虚拟地址,这一行是计算当前程序运行的物理地址和虚拟地址的差值,将其保存到r3中.
 
 150行: 将r5存储的虚拟地址(__proc_info_begin)转换成物理地址
+
 151行: 将r6存储的虚拟地址(__proc_info_end)转换成物理地址
+
 152行: 对照struct proc_info_list,可以得知,这句是将当前proc_info的cpu_val和cpu_mask分别存r3, r4中
+
 153行: r9中存储了processor id(arch/arm/kernel/head.S中的75行),与r4的cpu_mask进行逻辑与操作,得到我们需要的值
+
 154行: 将153行中得到的值与r3中的cpu_val进行比较
+
 155行: 如果相等,说明我们找到了对应的processor type,跳到160行,返回
+
 156行: (如果不相等) , 将r5指向下一个proc_info,
+
 157行: 和r6比较,检查是否到了__proc_info_end.
+
 158行: 如果没有到__proc_info_end,表明还有proc_info配置,返回152行继续查找
+
 159行: 执行到这里,说明所有的proc_info都匹配过了,但是没有找到匹配的,将r5设置成0(unknown processor)
+
 160行: 返回
 
 ==2. 确定 machine type==
@@ -395,6 +405,30 @@ __lookup_machine_type 函数
 203行: (不相同), 取下一个machine_desc的地址
 
 204行: 和r6进行比较,检查是否到了__arch_info_end.
+
 205行: 如果不相同,说明还有machine_desc,返回200行继续查找.
+
 206行: 执行到这里,说明所有的machind_desc都查找完了,并且没有找到匹配的, 将r5设置成0(unknown machine).
+
 207行: 返回
+
+==3. 创建页表==
+
+通过前面的两步,我们已经确定了processor type 和 machine type.
+此时,一些特定寄存器的值如下所示:
+
+{{{
+r8 = machine info       (struct machine_desc的基地址)
+r9 = cpu id             (通过cp15协处理器获得的cpu id)
+r10 = procinfo          (struct proc_info_list的基地址)
+}}}
+
+创建页表是通过函数 __create_page_tables 来实现的.
+
+这里,我们使用的是arm的L1主页表,L1主页表也称为段页表(section page table)
+L1 主页表将4 GB 的地址空间分成若干个1 MB的段(section),因此L1页表包含4096个页表项(section entry). 每个页表项是32 bits(4 bytes)
+因而L1主页表占用 4096 *4 = 16k的内存空间.
+
+        对于ARM926,其L1 section entry的格式为可参考arm926EJS TRM):
+
+(图)
