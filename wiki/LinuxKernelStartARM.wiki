@@ -31,16 +31,21 @@
 
 首先，我们先对几个重要的宏进行说明(我们针对有MMU的情况)：
 
-     宏                 位置                           默认值          说明
-KERNEL_RAM_ADDR  arch/arm/kernel/head.S +26          0xc0008000      kernel在RAM中的的虚拟地址
-PAGE_OFFSET      include/asm-arm/memeory.h +50       0xc0000000      内核空间的起始虚拟地址
-TEXT_OFFSET      arch/arm/Makefile +137              0x00008000      内核相对于存储空间的偏移
-TEXTADDR         arch/arm/kernel/head.S +49          0xc0008000      kernel的起始虚拟地址
-PHYS_OFFSET      include/asm-arm/arch-xxx/memory.h   平台相关        RAM的起始物理地址
+
+||宏||位置||默认值||说明||
+KERNEL_RAM_ADDR||arch/arm/kernel/head.S +26||0xc0008000||kernel在RAM中的的虚拟地址||
+||PAGE_OFFSET||include/asm-arm/memeory.h +50||0xc0000000||内核空间的起始虚拟地址||
+||TEXT_OFFSET||arch/arm/Makefile +137||0x00008000||内核相对于存储空间的偏移||
+||TEXTADDR||arch/arm/kernel/head.S +49||0xc0008000||kernel的起始虚拟地址||
+||PHYS_OFFSET||include/asm-arm/arch-xxx/memory.h||平台相关||RAM的起始物理地址||
 
 
         内核的入口是stext,这是在arch/arm/kernel/vmlinux.lds.S中定义的:
+
+{{{
         00011: ENTRY(stext)
+}}}
+
         对于vmlinux.lds.S,这是ld script文件,此文件的格式和汇编及C程序都不同,本文不对ld script作过多的介绍,只对内核中用到的内容进行讲解,关于ld的详细内容可以参考ld.info
         这里的ENTRY(stext) 表示程序的入口是在符号stext.
         而符号stext是在arch/arm/kernel/head.S中定义的:
@@ -968,5 +973,3 @@ L1 主页表将4 GB 的地址空间分成若干个1 MB的段(section),因此L1�
 第55行: 最终跳转到start_kernel
 
 ===FIN===
-
-
