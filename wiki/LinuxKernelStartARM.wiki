@@ -1,6 +1,6 @@
 #summary ARM Linux内核启动过程.
 
-注: 本文转自ChinaUnix, 作者为XPL.
+注: 本文转自ChinaUnix 作者为XPL.
 
 本文针对arm linux, 从kernel的第一条指令开始分析,一直分析到进入 start_kernel()函数.
 我们当前以linux-2.6.19内核版本作为范例来分析,本文中所有的代码,前面都会加上行号以便于和源码进行对照,
@@ -432,3 +432,142 @@ L1 主页表将4 GB 的地址空间分成若干个1 MB的段(section),因此L1�
         对于ARM926,其L1 section entry的格式为可参考arm926EJS TRM):
 
 [http://xiangelinux.googlecode.com/files/armmmu.gif]
+
+下面我们来分析 __create_page_tables 函数:
+
+         在 arch/arm/kernel/head.S 中:
+
+{{{
+00206:         .type        __create_page_tables, %function
+00207: __create_page_tables:
+00208:         pgtbl        r4                                @ page table address
+00209:
+00210:         /*
+00211:          * Clear the 16K level 1 swapper page table
+00212:          */
+00213:         mov        r0, r4
+00214:         mov        r3, #0
+00215:         add        r6, r0, #0x4000
+00216: 1:        str        r3, [r0], #4
+00217:         str        r3, [r0], #4
+00218:         str        r3, [r0], #4
+00219:         str        r3, [r0], #4
+00220:         teq        r0, r6
+00221:         bne        1b
+00222:
+00223:         ldr        r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
+00224:
+00225:         /*
+00226:          * Create identity mapping for first MB of kernel to
+00227:          * cater for the MMU enable.  This identity mapping
+00228:          * will be removed by paging_init().  We use our current program
+00229:          * counter to determine corresponding section base address.
+00230:          */
+00231:         mov        r6, pc, lsr #20                        @ start of kernel section
+00232:         orr        r3, r7, r6, lsl #20                @ flags + kernel base
+00233:         str        r3, [r4, r6, lsl #2]                @ identity mapping
+00234:
+00235:         /*
+00236:          * Now setup the pagetables for our kernel direct
+00237:          * mapped region.
+00238:          */
+00239:         add        r0, r4,  #(TEXTADDR & 0xff000000) >> 18        @ start of kernel
+00240:         str        r3, [r0, #(TEXTADDR & 0x00f00000) >> 18]!
+00241:
+00242:         ldr        r6, =(_end - PAGE_OFFSET - 1)        @ r6 = number of sections
+00243:         mov        r6, r6, lsr #20                        @ needed for kernel minus 1
+00244:
+00245: 1:        add        r3, r3, #1 << 20
+00246:         str        r3, [r0, #4]!
+00247:         subs        r6, r6, #1
+00248:         bgt        1b
+00249:
+00250:         /*
+00251:          * Then map first 1MB of ram in case it contains our boot params.
+00252:          */
+00253:         add        r0, r4, #PAGE_OFFSET >> 18
+00254:         orr        r6, r7, #PHYS_OFFSET
+00255:         str        r6, [r0]
+        
+        ...
+        
+00314:        mov        pc, lr
+00315:        .ltorg
+}}}
+
+206, 207行: 函数声明
+
+208行: 通过宏 pgtbl 将r4设置成页表的基地址(物理地址)
+        宏pgtbl 在 arch/arm/kernel/head.S 中:
+
+{{{        
+        00042:        .macro        pgtbl, rd
+        00043:        ldr        \rd, =(__virt_to_phys(KERNEL_RAM_ADDR - 0x4000))
+        00044:        .endm
+
+        可以看到,页表是位于 KERNEL_RAM_ADDR 下面 16k 的位置
+        宏 __virt_to_phys 是在incude/asm-arm/memory.h 中:
+        
+        00125: #ifndef __virt_to_phys
+        00126: #define __virt_to_phys(x)        ((x) - PAGE_OFFSET + PHYS_OFFSET)
+        00127: #define __phys_to_virt(x)        ((x) - PHYS_OFFSET + PAGE_OFFSET)
+        00128: #endif   
+}}}     
+        
+        
+下面从213行 - 221行, 是将这16k 的页表清0.
+
+213行: r0 = r4, 将页表基地址存在r0中
+
+214行: 将 r3 置成0
+
+215行: r6  = 页表基地址 + 16k, 可以看到这是页表的尾地址
+
+216 - 221 行: 循环,从 r0 到 r6 将这16k页表用0填充.
+      
+223行: 获得proc_info_list的__cpu_mm_mmu_flags的值,并存储到 r7中. (宏PROCINFO_MM_MMUFLAGS是在arch/arm/kernel/asm-offset.c中定义)
+
+
+231行: 通过pc值的高12位(右移20位),得到kernel的section,并存储到r6中.因为当前是通过运行时地址得到的kernel的 section,因而是物理地址.
+
+232行: r3 = r7 | (r6 << 20); flags + kernel base,得到页表中需要设置的值.
+
+233行: 设置页表: mem[r4 + r6 * 4] = r3
+        这里,因为页表的每一项是32 bits(4 bytes),所以要乘以4(<<2).
+
+上面这三行,设置了kernel的第一个section(物理地址所在的page entry)的页表项
+
+239, 240行: TEXTADDR是内核的起始虚拟地址(0xc0008000), 这两行是设置kernel起始虚拟地址的页表项(注意,这里设置的页表项和上面的231 - 233行设置的页表项是不同的 )
+        执行完后,r0指向kernel的第2个section的虚拟地址所在的页表项.
+
+
+        /* TODO: 这两行的code很奇怪,为什么要先取TEXTADDR的高8位(Bit[31:24])0xff000000,然后再取后面的8位 (Bit[23:20])0x00f00000*/ 
+         
+        
+242行: 这一行计算kernel镜像的大小(bytes).
+        _end 是在vmlinux.lds.S中162行定义的,标记kernel的结束位置(虚拟地址):
+
+{{{
+        00158                .bss : {
+        00159                __bss_start = .;        /* BSS                                */
+        00160                *(.bss)
+        00161                *(COMMON)
+        00162                _end = .;
+        00163        }
+}}}
+       
+        kernel的size =  _end - PAGE_OFFSET -1, 这里 减1的原因是因为 _end 是 location counter,它的地址是kernel镜像后面的一个byte的地址.
+
+243行: 地址右移20位,计算出kernel有多少sections,并将结果存到r6中
+
+245 - 248行: 这几行用来填充kernel所有section虚拟地址对应的页表项.
+
+253行: 将r0设置为RAM第一兆虚拟地址的页表项地址(page entry)
+
+254行: r7中存储的是mmu flags, 逻辑或上RAM的起始物理地址,得到RAM第一个MB页表项的值.
+
+255行:　设置RAM的第一个MB虚拟地址的页表.
+
+上面这三行是用来设置RAM中第一兆虚拟地址的页表. 之所以要设置这个页表项的原因是RAM的第一兆内存中可能存储着boot params.
+
+这样,kernel所需要的基本的页表我们都设置完了, 如下图所示:
