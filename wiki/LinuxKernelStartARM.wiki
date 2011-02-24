@@ -1,0 +1,30 @@
+#summary ARM Linux内核启动过程.
+
+注: 本文转自ChinaUnix, 作者为XPL.
+
+本文针对arm linux, 从kernel的第一条指令开始分析,一直分析到进入 start_kernel()函数.
+我们当前以linux-2.6.19内核版本作为范例来分析,本文中所有的代码,前面都会加上行号以便于和源码进行对照,
+例:
+在文件init/main.c中:
+00478: asmlinkage void __init start_kernel(void)
+前面的"00478:" 表示478行,冒号后面的内容就是源码了.
+
+在分析代码的过程中,我们使用缩进来表示各个代码的调用层次.
+
+由于启动部分有一些代码是平台特定的,虽然大部分的平台所实现的功能都比较类似,但是为了更好的对code进行说明,对于平台相关的代码,我们选择 at91(ARM926EJS)平台进行分析.
+
+另外,本文是以uncompressed kernel开始讲解的.对于内核解压缩部分的code,在 arch/arm/boot/compressed中,本文不做讨论.
+
+=一. 启动条件=
+        通常从系统上电到执行到linux kenel这部分的任务是由boot loader来完成.
+        关于boot loader的内容,本文就不做过多介绍.
+        这里只讨论进入到linux kernel的时候的一些限制条件,这一般是boot loader在最后跳转到kernel之前要完成的:
+        *1. CPU必须处于SVC(supervisor)模式,并且IRQ和FIQ中断都是禁止的;
+        *2. MMU(内存管理单元)必须是关闭的, 此时虚拟地址对物理地址;
+        *3. 数据cache(Data cache)必须是关闭的
+        *4. 指令cache(Instruction cache)可以是打开的,也可以是关闭的,这个没有强制要求;
+        *5. CPU 通用寄存器0 (r0)必须是 0;
+        *6. CPU 通用寄存器1 (r1)必须是 ARM Linux machine type (关于machine type, 我们后面会有讲解)
+        *7. CPU 通用寄存器2 (r2) 必须是 kernel parameter list 的物理地址(parameter list 是由boot loader传递给kernel,用来描述设备信息属性的列表,详细内容可参考"Booting ARM Linux"文档).
+
+
