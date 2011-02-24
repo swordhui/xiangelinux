@@ -10,7 +10,7 @@
 
 =2. Linux内核相关=
 ||1||[LinuxKernelStart Linux内核2.6.31启动过程 (x86架构)]||swordhuihui||
-||1||[LinuxKernelStartArm Linux内核2.6.31启动过程 (ARM架构)]||XPL||
+||1||[LinuxKernelStartARM Linux内核2.6.31启动过程 (ARM架构)]||XPL||
 
 ---------------------------------------------------------------------------------------------
 
