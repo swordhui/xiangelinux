@@ -19,13 +19,13 @@
         通常从系统上电到执行到linux kenel这部分的任务是由boot loader来完成.
         关于boot loader的内容,本文就不做过多介绍.
         这里只讨论进入到linux kernel的时候的一些限制条件,这一般是boot loader在最后跳转到kernel之前要完成的:
-        *1. CPU必须处于SVC(supervisor)模式,并且IRQ和FIQ中断都是禁止的;
-        *2. MMU(内存管理单元)必须是关闭的, 此时虚拟地址对物理地址;
-        *3. 数据cache(Data cache)必须是关闭的
-        *4. 指令cache(Instruction cache)可以是打开的,也可以是关闭的,这个没有强制要求;
-        *5. CPU 通用寄存器0 (r0)必须是 0;
-        *6. CPU 通用寄存器1 (r1)必须是 ARM Linux machine type (关于machine type, 我们后面会有讲解)
-        *7. CPU 通用寄存器2 (r2) 必须是 kernel parameter list 的物理地址(parameter list 是由boot loader传递给kernel,用来描述设备信息属性的列表,详细内容可参考"Booting ARM Linux"文档).
+        * 1. CPU必须处于SVC(supervisor)模式,并且IRQ和FIQ中断都是禁止的;
+        * 2. MMU(内存管理单元)必须是关闭的, 此时虚拟地址对物理地址;
+        * 3. 数据cache(Data cache)必须是关闭的
+        * 4. 指令cache(Instruction cache)可以是打开的,也可以是关闭的,这个没有强制要求;
+        * 5. CPU 通用寄存器0 (r0)必须是 0;
+        * 6. CPU 通用寄存器1 (r1)必须是 ARM Linux machine type (关于machine type, 我们后面会有讲解)
+        * 7. CPU 通用寄存器2 (r2) 必须是 kernel parameter list 的物理地址(parameter list 是由boot loader传递给kernel,用来描述设备信息属性的列表,详细内容可参考"Booting ARM Linux"文档).
 
 =二. starting kernel=
 
@@ -77,14 +77,13 @@ PHYS_OFFSET      include/asm-arm/arch-xxx/memory.h   平台相关        RAM的�
 其中,73行是确保kernel运行在SVC模式下,并且IRQ和FIRQ中断已经关闭,这样做是很谨慎的.
 
 arm linux boot的主线可以概括为以下几个步骤:
-        1. 确定 processor type                        (75 - 78行)
-        2. 确定 machine type                        (79 - 81行)
-        3. 创建页表                                (82行)     
-        4. 调用平台特定的__cpu_flush函数        (在struct proc_info_list中)        (94 行)                           
-        5. 开启mmu                                (93行)
-        6. 切换数据                                 (91行)
+        * 1. 确定 processor type                        (75 - 78行)
+        * 2. 确定 machine type                        (79 - 81行)
+        * 3. 创建页表                                (82行)     
+        * 4. 调用平台特定的__cpu_flush函数        (在struct proc_info_list中)        (94 行)                           
+        * 5. 开启mmu                                (93行)
+        * 6. 切换数据                                 (91行)
        
         最终跳转到start_kernel                        (在__switch_data的结束的时候,调用了 b        start_kernel)
 
 下面,我们按照这个主线,逐步的分析Code.
-
