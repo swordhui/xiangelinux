@@ -19,3 +19,5 @@
 2009 开始接触LFS, 根据手册制作了自己的LFS系统。并有了做包管理器的想法。
 2010 开始编写弦歌Linux的bash代码。
 }}}
+
+<iframe width="100%" height="350" class="share_self"  frameborder="0" scrolling="no" src="http://service.t.sina.com.cn/widget/WeiboShow.php?width=0&height=350&fansRow=2&ptype=1&speed=0&skin=10&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=1909338954&verifier=9e0cf85c"></iframe>
