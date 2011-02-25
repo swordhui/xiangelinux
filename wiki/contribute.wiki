@@ -1,7 +1,7 @@
 #summary 成员贡献列表
 
-||名称||贡献列表||个人网站||
-||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||[http://blog.sina.com.cn/u/1909338954 Sword Island]||
+||名称||贡献列表||个人网站||微薄||
+||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||[http://blog.sina.com.cn/u/1909338954 Sword Island]||[http://t.sina.com.cn/1909338954?s=6uyXnP][img]http://service.t.sina.com.cn/widget/qmd/1909338954/9e0cf85c/10.png]
 ||[jonsk_echo 王江伟]||1.龙芯版本的编译,脚本写作<br>2.龙芯脚本分支维护||[http://wjw1td.blog.163.com/ Blog]||
 ||pinkme005||xgfileinfo初期编码||暂无||
 ||tomgreen||版本处理的bash函数||暂无||
