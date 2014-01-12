@@ -37,11 +37,20 @@
 ==9. 测试==
    使用弦歌工作/上网，发现她的缺陷与不足，提交到Bug列表.
 
-
 ===非常期待您的参与 :-)===
 ===没有完美的个人，只有完美的团队.===
 
 ===弦歌维护小组===
+
+
+||名称||贡献列表||个人网站||微博||
+||[sword swordhuihui]||1.文档写作和初期编码<br>2.网站维护||[http://blog.sina.com.cn/u/1909338954 Sword Island]||[http://t.sina.com.cn/1909338954?s=6uyXnP http://service.t.sina.com.cn/widget/qmd/1909338954/9e0cf85c/10.png]||
+||[jonsk_echo 王江伟]||1.龙芯版本的编译,脚本写作<br>2.龙芯脚本分支维护||[http://wjw1td.blog.163.com/ Blog]||
+||pinkme005||xgfileinfo初期编码||暂无||
+||tomgreen||版本处理的bash函数||暂无||
+||lastart||版本处理bash函数||暂无||
+||gaosboy||版本处理bash函数||暂无||
+||黄忠信||net-tools的编译脚本||暂无||
 
 
 
