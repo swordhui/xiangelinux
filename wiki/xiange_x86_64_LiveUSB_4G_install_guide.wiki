@@ -1,0 +1,35 @@
+#summary 弦歌Linux安装指南.
+
+= 简介 =
+
+弦歌Linux发行版是LiveUSB格式，内含MBR, bootloader, kernel和弦歌系统。只需用磁盘拷贝工具写入U盘即可，大大简化了安装过程。<br>
+
+弦歌分为4G版本和8G版本。4G版本需要4G U盘（大于4G也可以)，8G版本需要8G U盘（大于8G也可以)。如果U盘容量比所需容量大，弦歌只占用前面的4G或8G空间，剩下的可以再次分区使用。比如16G U盘安装弦歌8G版本，前8G被占用，后8G可以再创建新分区另作他用。
+
+= Linux平台安装步骤 =
+
+  1.  解压下载文件。
+{{{
+tar xvaf Xiange-x86_64-LiveUSB-XX下载版本XX.tar.gz
+}}}
+
+  2.  校验解压后的image文件。
+  3. 确保U盘容量大于等于所需容量。
+  4. 插入U盘，得到磁盘设备名，假定为/dev/sdb.
+  5. 写入U盘
+{{{
+dd if=xg64.img of=/dev/sdb 
+}}}
+4G版写入过程大概20分钟。如果有pv可用，下列命令可以显示进度条:
+{{{
+pv xg64.img | dd of=/dev/sdb
+}}}
+比上面纯dd命令美观些。
+注意设备名称，是/dev/sdb 而不是 /dev/sdb1. 否在无法启动。
+  6. 写完后用U盘启动即可。
+  7. 登录用户名:xiange 密码:xiange root密码:xiange
+
+= Windows平台安装步骤 =
+  #可以用7zip软件解压。
+  #可以用开源的磁盘写入软件写img文件到U盘。
+[http://sourceforge.net/projects/win32diskimager 磁盘写入工具]
