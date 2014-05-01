@@ -178,7 +178,7 @@ Remove dir /var/xiange/db/app-test
 ||示例||gpkg -c autoconf||
 ||功能||根据记录的md5校验信息，校验软件包的每个文件，看看是否被修改过||
 ||结果||返回0表示所有文件校验成功, 返回1表示校验失败||
-||状态||校验码已采集记录，校验功能尚不支持||
+||状态||已完成||
 
 =8. 列出已安装的软件包=
 ||命令格式||gpkg -I ||
@@ -206,7 +206,7 @@ gpkg -I | sort | tail
 =9. 列出包文件=
 ||命令格式||gpkg -l 软件名称||
 ||示例||gpkg -l autoconf||
-||功能||列出属于软件包的所有文件信息，包括路径，大小，权限，最后修改时间，md5sum等||
+||功能||列出属于软件包的所有文件信息，包括类型, 路径，大小||
 ||结果||返回0表示成功, 返回1表示包没有安装||
 ||状态||已完成||
 
@@ -296,10 +296,13 @@ Resolving deltas: 100% (5/5), done.
 {{{
 gpkg -info
 
-CC="gcc"
+XGB_ARCH="i686"
+XGB_PREFIX=""
 CFLAGS="-march=native -mtune=native -O2 -fomit-frame-pointer -pipe"
-CPPFLAGS="$CFLAGS"
+CXXFLAGS="$CFLAGS"
 XG_I18N="en zh_CN"
+XGB_CONFIG="--prefix=/usr "
+XGPARA_MAKE="-j 8"
 }}}
 
 gpkg从0.10.7开始，先检查/etc/xgparas是否存在，如果存在，使用里面的参数作为编译参数, 否则使用默认优化参数。<br>
@@ -315,20 +318,43 @@ gpkg -info > /etc/xgparas
 sed -i "s/native/i686/g" /etc/xgparas
 
 gpkg -info
-CC="gcc"
+
+XGB_ARCH="i686"
+XGB_PREFIX=""
 CFLAGS="-march=i686 -mtune=i686 -O2 -fomit-frame-pointer -pipe"
-CPPFLAGS="$CFLAGS"
+CXXFLAGS="$CFLAGS"
 XG_I18N="en zh_CN"
+XGB_CONFIG="--prefix=/usr "
+XGPARA_MAKE="-j 8"
 }}}
 
 XG_I18N控制允许那些本地化字符串安装在/usr/share/locale目录下。默认允许英文和中文资源安装，其他的在安装前剔除。
 
+XGPARA_MAKE可以控制Make时并行编译进程数目，默认为CPU核心数目。8核CPU可以大大加快编译速度。
+
 =14. 显示软件包依赖列表=
-||命令格式||gpkg -dep 包名称 ||
-||示例||gpkg -dep libpng||
+||命令格式||gpkg -p 包名称 ||
+||示例||gpkg -p libpng||
 ||功能||分层次显示出依赖的尚未安装的软件包||
-||结果||返回0表示成功, 返回1表示git失败||
-||状态||未完成||
+||结果||返回0表示成功, 返回1表示失败||
+||状态||已完成||
+
+示例:
+{{{
+gpkg -p harfbuzz
+
+ harfbuzz-0.9.26 (Installed)
+     glib2-2.38.2 (Installed)
+         libffi-3.0.13 (Installed)
+         python-2.7.6 (Installed)
+         pcre-8.34 (Installed)
+     freetype-2.5.2 (Installed)
+         libpng-1.6.9 (Installed)
+     icu-52.1 (Installed)
+         llvm-3.4 (Installed)
+     graphite2-1.2.4 (Installed)
+         cmake-2.8.12.2 (Installed)
+}}}
 
 =15. 显示软件包反向依赖列表=
 ||命令格式||gpkg -rdep 包名称 ||
@@ -336,7 +362,6 @@ XG_I18N控制允许那些本地化字符串安装在/usr/share/locale目录下�
 ||功能||分层次显示出所有依赖于指定软件包的已安装软件包||
 ||结果||返回0表示成功, 返回1表示git失败||
 ||状态||已完成||
-
 
 示例:
 {{{
