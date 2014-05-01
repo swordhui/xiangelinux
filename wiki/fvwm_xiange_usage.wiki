@@ -2,36 +2,10 @@
 
 == 0. 简介 ==
 fvwm-xiange是[http://code.google.com/p/xiangelinux/ 弦歌Linux]默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:
-[http://xiangelinux.googlecode.com/files/fvwm-xiange-term.png]
+[http://sourceforge.net/p/xiangelinux/wiki/Home/attachment/fvwm-xg-01.png]
 
 == 1. 快捷启动区 ==
-屏幕左上角为快捷启动区，分为8个类别，分别为网络，图像，声音，系统，科学相关，Wine,游戏,和其他。在图标上点左键会出现程序列表。列表内容根据/etc/xg_launch目录下的文件决定:
-{{{
-sword@XGSvr /etc/xg_launch $ls
-audio  games  image  net  others  README  sci  sys  template  wine
-}}}
-
-可用看到xg_launch目录下有8个目录，分别对应上面提到的8个类别。
-我们打开net目录:
-{{{
-ls net
-C00firefox  C01links  C10pidgin  C15skype
-}}}
-
-可用看到有4个文件，分别表示四个于网络相关的程序: firefox, links, pidgin和skype.<br>
-用vi打开C00firefox:
-{{{
-+ firefox%/usr/share/icons/hicolor/32x32/apps/firefox-my.png%	Exec firefox
-}}}
-
-可用看到只有一行， 以"+"开头， 后面为Title（注意不能有空格), %%之间为图标路径，最好是32x32的，类型支持png, svg, xpm, jpg, tiff等等。 Exec后面是用户点击时执行的命令，可带参数, 如:<br>
-{{{
-Exec sakura -e "sudo /etc/rc.d/init.d/eth1 start"
-}}}
-
-文件名为大写的C后面根2个数字开头，名字无所谓。数字表示在此类别中的顺序，越小越靠前。<br>
-
-这样就可用随意定制快捷启动区要显示的项目。写完后不用重启任何东西，鼠标点击一下就可看到新的修改。
+屏幕左上角为快捷启动区，分为8个类别，分别为网络，图像，声音，系统，科学相关，Wine,游戏,和办公。每个类别里都有不同的应用程序，在图标上点左键会出现程序列表。例如点网络类会出现如下菜单: 
 
 == 2. 最小化图标区 ==
 在屏幕信息条的中间， 应用程序最小化后以图标方式放在这里。点击一下即可还原。<br>
@@ -91,4 +65,3 @@ LANG="zh_CN.GB2312" sakura -l
    * 右Alt + 1,2,3,4 切换工作区
    * 快捷键访问快捷菜单
    * 窗口操作图标采用了FVWM默认方式，需要修改一下
-
