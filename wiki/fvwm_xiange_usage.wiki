@@ -1,8 +1,9 @@
 #summary 本文描述了fvwm-xiange的使用方法。
 
 == 0. 简介 ==
-fvwm-xiange是[http://code.google.com/p/xiangelinux/ 弦歌Linux]默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:
+fvwm-xiange是[http://code.google.com/p/xiangelinux/ 弦歌Linux]默认使用的窗口管理器，以fvwm2为基础，参考并简化了fvwm-crystal. 抓图如下:<br><br>
 [http://sourceforge.net/p/xiangelinux/wiki/Home/attachment/fvwm-xg-01.png]
+<br><br>
 
 == 1. 快捷启动区 ==
 屏幕左上角为快捷启动区，分为8个类别，分别为网络，图像，声音，系统，科学相关，Wine,游戏,和办公。每个类别里都有不同的应用程序，在图标上点左键会出现程序列表。例如点网络类会出现如下菜单: 
