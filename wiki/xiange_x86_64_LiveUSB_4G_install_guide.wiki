@@ -5,11 +5,12 @@
 弦歌Linux发行版是LiveUSB格式，内含MBR, bootloader, kernel和弦歌系统。只需用磁盘拷贝工具写入U盘即可，大大简化了安装过程。<br>
 
 弦歌分为4G版本和8G版本。4G版本需要4G U盘（大于4G也可以)，8G版本需要8G U盘（大于8G也可以)。如果U盘容量比所需容量大，弦歌只占用前面的4G或8G空间，剩下的可以再次分区使用。比如16G U盘安装弦歌8G版本，前8G被占用，后8G可以再创建新分区另作他用。
+------
 
 = 下载地址 =
 
 ||source forge|| [http://sourceforge.net/projects/xiangelinux/files/Xiange-x86_64-LiveUSB-4G.tar.xz/download Xiange-x86_64-LiveUSB-4G-201404] ||
-
+------
 
 = Linux平台安装步骤 =
 
@@ -33,20 +34,22 @@ pv xg64.img | dd of=/dev/sdb
   注意设备名称，是/dev/sdb 而不是 /dev/sdb1. 否在无法启动。
   * 6. 写完后用U盘启动即可。
   * 7. 登录用户名:xiange 密码:xiange root密码:xiange
-
+-----
 = Windows平台安装步骤 =
   # 可以用7zip软件解压。
   # 可以用开源的磁盘写入软件写img文件到U盘。
   [http://sourceforge.net/projects/win32diskimager 磁盘写入工具]
-
+----
 = 屏幕抓图 =
 
 [http://sourceforge.net/p/xiangelinux/wiki/Home/attachment/fvwm-xg-01.png]
 
 网络类应用:
+------
 [http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/fvwm-xg-appnet.png]
 
 图形类应用:
+------
 [http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/fvwm-xg-appimage.png]
 
 = 4G版本软件列表 =
