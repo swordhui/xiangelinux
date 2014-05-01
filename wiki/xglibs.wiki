@@ -4,37 +4,43 @@
 = 0. 简介 =
 
 本文描述了弦歌包管理系统[xgpkg gpkg]和编译脚本库之间的接口，和示例脚本的写作方法。<br>
-每个发行版本都有自己的编译脚本库，如Gentoo的portage, Slackware的slack build, Arch的abs等。目前的问题是没有统一的编译脚本接口，不能互相通用。不过可以互相借鉴。
+每个发行版本都有自己的编译脚本库，如Gentoo的portage, Slackware的slack build, Arch的abs等。目前的问题是没有统一的编译脚本接口，不能互相通用。不过可以互相借鉴。<br>
+本文档基于gpkg-0.10.43.
 
 
 = 1. 接口 =
-
-对编译脚本来说，接口分为输入接口和输出接口两部分。接口由bash的变量和函数实现。
+接口位于gpkg和包编译脚本之间，以规范化的方法约束gpkg和包编译脚本。对编译脚本来说，接口分为输入接口和输出接口两部分。输入接口初始值由gpkg负责，根据用户设置赋值。输出接口赋值由包编译脚本负责，提供给gpkg使用。接口由bash的变量和函数实现。
 
 == 1.1 输入接口 ==
 
 输入接口主要是路径信息，编译参数等，由变量实现, 列表如下:
 
 ||变量名称||描述||示例取值||备注||
-||$T||软件包类别||"app-sys"||||
-||$N||软件包名称||"autoconfg"||||
-||$V||软件包版本||"2.6.31"||||
-||$R||软件包修订版本||"-r1"||||
+||$T||软件包类别||"app-sys"||gpkg根据用户输入设置初值||
+||$N||软件包名称||"autoconfg"||gpkg根据用户输入设置初值||
+||$V||软件包版本||"2.6.31"||gpkg根据用户输入设置初值||
+||$R||软件包修订版本||"-r1"||gpkg根据用户输入设置初值,一般为""||
 ||$XGPATH_SOURCE||源码所在的目录||"/var/xiange/sources"||||
 ||$XGPATH_DEST||安装/打包目录||"/tmp/xiange/pack/$N-$V"||||
-||$CFLAGS||编译参数||"-march=native -mtune=native -O2 -fomit-frame-pointer -pipe"||系统变量||
-||$CXXFLAGS||C++编译参数||同$CFLAGS||系统变量||
-||XGB_CONFIG||autotools配置参数||--prefix=/usr/||进行configure时, 可以指定$XGB_CONFIG做参数. 软件包特定的部分用 XGB_CONFIG+=" --para=abc "实现.||
+||$CFLAGS||编译参数||"-march=native -mtune=native -O2 -fomit-frame-pointer -pipe"||gpkg根据/etc/xgparas文件内容赋值，用户修改该文件可以修改此设置。||
+||$CXXFLAGS||C++编译参数||同$CFLAGS||同上||
+||XGB_CONFIG||autotools配置参数||--prefix=/usr/||同上||
+||XGB_ARCH||平台类型||"i686"或"x86_64"||gpkg从/etc/xgparas读取, 没有的话通过uname获取||
+||XGPARA_MAKE||编译时Make的参数||"-j 8"||gpkg从/etc/xgparas读取, 没有的话通过nproc获取, 可以充分利用CPU加快编译速度。||
 
 关于$T, $N, $V, $R, 可以参见[xgpkg gpkg]中的软件包命名规则。
 
 
 == 1.2 输出接口: 变量 ==
+这些变量由编译脚本赋值，gpkg使用这些信息执行自动化操作。
+
 ||变量名称||描述||示例取值||备注||
 ||DESCRIPTION||软件包简短描述||"This is a sample skeleton xiange build script file"||||
 ||HOMEPAGE||软件包主页||"http://foo.bar.com/"||||
 ||SRC_URI||源码文件地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件||
 ||BIN_URI||二进制包地址||"http://foo.bar.com/test.tar.bz2"||多于一个文件时，每行一个文件<br>暂不实现||
+||RDEPEND||运行时依赖的软件包||libpng lua-0.5.1||目前只支持简单的依赖||
+||DEPEND||依赖的软件包，包括编译时||cmake nasm||目前只支持简单的依赖||
 ||XGB_CONFIG||执行configure时的参数||"CC=gcc --prefix=/usr"||gpkg会记录到打包文件里||
 
 == 1.3 输出接口: 函数 ==
@@ -42,34 +48,82 @@
 ===1.3.1  xgb_init()===
     gpkg调用xgb文件的接口函数前，首先调用xgb_init. 再这里可以重新对一些变量赋值。<br>
     gpkg在调用其他函数前，一定会调用此函数一次<br>
-    若脚本不实现此函数，gpkg会调用默认的xgb_init函数，直接返回0.
+    若脚本不实现此函数，gpkg会调用默认的xgb_init函数，直接返回0.<br>
+
+    大部分包编译脚本不需要此函数。vim是个例外，它通过xgb_init重新设置SRC_URI:
+{{{
+
+SRC_URI="ftp://ftp.vim.org/pub/vim/unix/vim-7.4.tar.bz2"
+
+VIM_PATCH_MIN=1
+VIM_PATCH_MAX=94
+VIM_PATCH_URL="ftp://ftp.vim.org/pub/vim/patches/7.4"
+
+
+#init 
+xgb_init()
+{
+    local name
+    local i
+
+    echo "Init..."
+
+    for ((i=$VIM_PATCH_MIN; i<=$VIM_PATCH_MAX; i++))
+    do
+        name=`printf "7.4.%03d" $i`
+        SRC_URI+=" $VIM_PATCH_URL/$name "
+        echo $name
+    done
+}
+}}}
+
+追加了94个补丁文件供下载使用。<br>
+
+googleearth利用xgb_init重新定义了SRC_URI:
+{{{
+
+SRC_URI="http://dl.google.com/dl/earth/client/current/google-earth-stable_current_i386.rpm"
+
+#init 
+xgb_init()
+{
+    echo "init $N-$V$R build script..."
+    if [ "$XGB_ARCH" == "x86_64" ]; then
+        SRC_URI="http://dl.google.com/dl/earth/client/current/google-earth-stable_current_x86_64.rpm"
+    fi
+}
+
+}}}
+
 
 ===1.3.2 xgb_unpack()===
     gpkg在安装指定软件包前，先调用软件包对应脚本文件的unpack函数。<br>
-    xgb_unpack需要将下载的源码(位于$XGPATH_SOUCE目录)解压到当前目录，缺省是/tmp/xiange/sources/, 并打上所有补丁, 必要时, 可以重新执行autoconf, automake, 生成新的configure文件<br>
+    xgb_unpack需要将下载的源码(位于$XGPATH_SOUCE目录)解压到当前目录，缺省是/tmp/xiange/$N-$V$R.<br>
     成功返回0, 否则1并显示错误信息. 
    
 ===1.3.3 xgb_config()===
     gpkg在调用玩xgb_unpack后，调用xgb_config配置软件包。<br>
-    调用xgb_config前，当前目录仍在解压目录(即/tmp/xiange/sources/)<br>
-    xgb_config 首先要进入或创建编译目录，然后调用configure配置软件包。配置由三个大部分组成, 一为安装目录, 即--prefix, --sysconfdir等, 这个每个软件包都一样, 放在变量$XGB_CONFIG里
-    
-  
-    第三步部分为软件包特有的, 需要增加到$XGB_CONFIG里.<br>
+    调用xgb_config前，当前目录仍在解压目录(即/tmp/xiange/$N-$V$R/)<br>
+    xgb_config 首先要进入或创建编译目录，打上所有补丁(如果有的话), 必要时, 可以重新执行autoconf, automake, 生成新的configure文件。然后调用configure配置软件包。配置使用$XGB_CONFIG, 初始值由gpkg设置，如--prefix, --sysconfdir等, 编译脚本可以追加自己特有的配置参数:
+{{{
+    XGB_CONFIG+=" --enable-lua --disable-static "
+
+    #Third, call configure with $XGB_CONFIG
+    ./configure $XGB_CONFIG
+}}}
 
     成功返回0, 否则返回2并显示错误信息.<br>
 
 
 ===1.3.4 xgb_build() ===
     gpkg调用脚本config成功后，调用build功能编译软件包.<br>
-    xgb_build应该调用make编译整个软件包，然后根据需要编译文档
+    一般来说xgb_build()调用make $XGPARA_MAKE 编译整个软件包，然后根据需要编译文档.
     成功返回0, 否则3并显示错误信息.<br>
  
 
 ===1.3.5 xgb_install()===
-    编译完成后，gpkg调用install将软件包安装到临时打包目录/tmp/xiange/包名称/pack/. 这个位置用$XGPATH_DEST表示。脚本编写者要读注意不能直接安装到根目录！<br>
-    xgb_install应该调用make install将软件包安装在这个临时目录。脚本编写者要读懂make install的代码，确保软件包只安装在临时目录，不会安装在根目录。<br>
-    对于大部分情况, 指定make DESTDIR=$XGPATH_DEST install 即可。
+    编译完成后，gpkg调用install将软件包安装到临时打包目录/tmp/xiange/$N-$V$R/pack/. 这个位置用$XGPATH_DEST表示。脚本编写者要读注意不能直接安装到根目录！或其他任何$XGPATH_DEST之外的目录， 这样会导致gpkg无法采集文件指纹信息。<br>
+    对于大部分情况, 指定make DESTDIR=$XGPATH_DEST install 即可，极少不用autotools或cmake的软件包，可以尝试用make --prefix=$XGPATH_DEST/usr。如果prefix也不行，需要脚本编写者读懂Makefile找出相应的方案，这种情况极少发生。
     安装成功后返回0, 失败返回4并显示错误信息。
 
     
@@ -79,18 +133,14 @@
 ===1.3.7 xgb_prerm()===
     gpkg删除软件包所有文件和目录前，调用prerm函数进行预清除，如删除没有记录到列表中的文件。
 
-
 ===1.3.8 xgb_postrm()===
     gpkg删除软件包所有文件和目录后，调用postrm函数进行最后的清除，如删除用户，去掉启动脚本等。。
-
 
 ===1.3.9 xgb_checkupdate()===
     需要检查当前软件有没有最新版本时, 调用这个功能. <br>
     脚本下载软件所在的网页, 解析网页找到最新的版本, 显示出来。
 
     可以写一个模板文件, 想编译新软件包时, 拷贝模板文件并编译即可.
-
-
 
 
 = 2. 示例脚本==
@@ -180,43 +230,29 @@ xgb_install()
 
 = 4. DIY: 动手写测试脚本 =
 
-== 4.1 创建目录 ==
+== 4.1 复制模板 ==
 
-在/var/xiange/xglibs下创建一个测试用的类别目录app-test:
+gpkg 提供快速拷贝模板生成编译脚本的方法:
 {{{
-mkdir /var/xiange/xglibs/app-test
-cd /var/xiange/xglibs/app-test
+gpkg new 类型/软件包-版本号, 例如:
+gpkg new x11-apps/gtktest-1.2.3
 }}}
 
-然后创建一个test目录。test即为包名称。
+gpkg会尝试找任何gtktest的编译脚本，如果找到任何一个版本，就赋值该版本的编译脚本做模板，如果找不到任何版本，就赋值标准模板。
+
+还有更快速的方法，就是当软件包有旧版本时，不需指定类型，如:
 {{{
-mkdir test
-cd test
+gpkg new vim-7.6
 }}}
 
-== 4.2 复制模板 ==
+gpkg会自动寻找目前最新的编译脚本，复制成vim-7.6的编译脚本。
 
-将模板文件复制为编译脚本。编译脚本名称由软件包名和版本号组成，中间用'-'隔开，以.xgb为扩展名。如test-1.0.0.xgb
-{{{
-cp ../../template.xgb test-1.0.0.xgb
-}}}
+如果vim-7.6的编译脚本已经存在, gpkg new vim-7.6直接编辑存在的脚本。
 
-复制完成后，gpkg就可以搜索到test软件包:
-{{{
-gpkg -s test
 
-* app-test/test
-	Available: 1.0.0
-	Installed:	 None
-	Desc.    : This is a sample skeleton xiange build script file
-	Homepage : http://foo.bar.com/
-}}}
+== 4.2 修改信息 ==
 
-可以看到来自于模板文件的描述和主页信息。
-
-== 4.3 修改信息 ==
-
-首先修改DESCRIPTION和HOMEPAGE变量，让其更有意义。修改完后再次用 gpkg -s test, 可以看到信息已更新。
+对于没有任何旧版本的新包来说，需要修改DESCRIPTION和HOMEPAGE变量，让其更有意义。修改完后再次用 gpkg -s test, 可以看到信息已更新。
 {{{
 vi test-1.0.0.xgb 
 
@@ -229,7 +265,8 @@ gpkg -s test
 	Homepage : http://code.google.com/p/xiangelinux/
 }}}
 
-== 4.4 下载软件包==
+
+== 4.3 下载软件包==
 只需要修改$SRC_URI 为测试工程的下载地址http://xiangelinux.googlecode.com/files/test-1.0.0.tar.bz2. 
 {{{
 test-1.0.0.xgb, 第17行
@@ -264,7 +301,7 @@ ls -l /var/xiange/sources/test*
 -rwxrwxr-x 1 sword root 407  5月 24 16:43 /var/xiange/sources/test-1.0.0.tar.bz2
 }}}
 
-== 4.5 解压 ==
+== 4.4 解压 ==
 修改test-1.0.0.xgb的xgb_unpack函数，如下:
 {{{
 xgb_unpack()
@@ -308,7 +345,7 @@ ls -l /tmp/xiange/sources/
 drwxr-xr-x 2 sword sword 80  5月 24 16:41 test-1.0.0
 }}}
 
-== 4.6 配置 ==
+== 4.5 配置 ==
 test软件包没有使用autotools, 没有configure的过程。我们在这里打印一些输入参数:
 {{{
 #config
@@ -383,7 +420,7 @@ make test-1.0.0... this is not a error
 
 可以看到输入参数的取值。<br>
 
-== 4.7 编译 ==
+== 4.6 编译 ==
 
 对大部分软件包来说，编译就是执行make. 我们在这里指定编译参数:
 {{{
@@ -453,7 +490,7 @@ install to /tmp/xiange/pack/test-1.0.0... this is not a error
 hello, world
 }}}
 
-== 4.6 安装 ==
+== 4.7安装 ==
 将软件包安装到$XGPATH_DEST目录. 在写xgb_install()函数之前，请仔细阅读软件包的Makefile文件。
 {{{
 
