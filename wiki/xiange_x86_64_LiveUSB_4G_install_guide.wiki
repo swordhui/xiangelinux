@@ -39,7 +39,15 @@ pv xg64.img | dd of=/dev/sdb
   # 可以用开源的磁盘写入软件写img文件到U盘。
   [http://sourceforge.net/projects/win32diskimager 磁盘写入工具]
 
+= 屏幕抓图 =
+
 [http://sourceforge.net/p/xiangelinux/wiki/Home/attachment/fvwm-xg-01.png]
+
+网络类应用:
+[http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/fvwm-xg-appnet.png]
+
+图形类应用:
+[http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/fvwm-xg-appimage.png]
 
 = 4G版本软件列表 =
 
