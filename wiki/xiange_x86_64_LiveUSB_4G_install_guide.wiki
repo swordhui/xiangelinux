@@ -10,6 +10,7 @@
 = 下载地址 =
 
 ||source forge||[http://sourceforge.net/projects/xiangelinux/files/Xiange-x86_64-LiveUSB-4G.tar.xz/download Xiange-x86_64-LiveUSB-4G-201404]||
+||百度云||[http://pan.baidu.com/s/1i3DTLuX Xiange-x86_64-LiveUSB-4G-201404]||
 
 
 
