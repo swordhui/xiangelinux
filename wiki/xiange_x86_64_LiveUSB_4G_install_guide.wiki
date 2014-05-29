@@ -97,7 +97,7 @@ pv xg64.img | dd of=/dev/sdb
 
 这种方式比dd方式更好，因为不删除U盘原来的东西。U盘装入弦歌系统后，还可以在Windows或其他平台下使用。
 
-= 4G版本软件列表 =
+= 201406版本软件列表 =
 
 {{{
     ind.  install time		  size  package with version 
