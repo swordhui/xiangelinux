@@ -9,28 +9,30 @@
 
 = 下载地址 =
 
-
-||百度云||[http://yun.baidu.com/share/link?shareid=1535139273&uk=3557704361 Xiange-x86_64-LiveUSB-ALL-201406]||
-
+|| ||版本||下载地址||平台||备注与文档||
+||[http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/new32.png]|| *Xiange-x86_64-LiveUSB-ALL-201406* ||[http://yun.baidu.com/share/link?shareid=1535139273&uk=3557704361 百度云]||x86_64||纯64位桌面系统, 2G U盘压缩版, 用dd安装.  [xiange_x86_64_LiveUSB_4G_install_guide 安装指南]||
+||[http://sourceforge.net/p/xiangelinux/wiki/applications/attachment/new32.png]|| *Xiange-i686-LiveUSB-ALL-201406* ||[http://yun.baidu.com/share/link?shareid=3075881173&uk=3557704361 百度云]||i686||32位桌面系统, 2G U盘压缩版, 用dd安装.  [xiange_x86_64_LiveUSB_4G_install_guide 安装指南]||
 
 
 = Linux平台安装步骤 =
 
   * 1. 解压下载文件。
+  如果下载的文件是.tar.xz格式，需要用下列命令解压。
 {{{
 tar xvaf Xiange-x86_64-LiveUSB-XX下载版本XX.tar.xz
 }}}
+  如果下载文是.img格式，无需解压。
 
-  * 2. 校验解压后的image文件。
+  * 2. 校验解压后的.img文件。
   * 3. 确保U盘容量大于2G。
   * 4. 插入U盘，得到磁盘设备名，假定为/dev/sdb.
   * 5. 写入U盘
 {{{
-dd if=xg64.img of=/dev/sdb 
+dd if=XXXX.img of=/dev/sdb 
 }}}
   写入过程大概20分钟。如果有pv可用，下列命令可以显示进度条:
 {{{
-pv xg64.img | dd of=/dev/sdb
+pv XXXX.img | dd of=/dev/sdb
 }}}
   比上面纯dd命令美观些, 但100%后还要同步，一定要等程序退出。
   注意设备名称，是/dev/sdb 而不是 /dev/sdb1. 否在无法启动。
@@ -38,9 +40,11 @@ pv xg64.img | dd of=/dev/sdb
   * 7. 登录用户名:xiange 密码:xiange root密码:xiange
 -----
 = Windows平台安装步骤 =
-  # 可以用7zip软件解压。
-  # 可以用开源的磁盘写入软件写img文件到U盘。
+  # 如果下载文件是.tar.gz格式，需要用7zip软件解压得到.img文件。如果是.img格式，直接使用即可。
+  # 用开源的磁盘写入软件写.img文件到U盘。
   [http://sourceforge.net/projects/win32diskimager 磁盘写入工具]
+  # 用U盘重新启动即可
+  # 登录用户名:xiange 密码:xiange root密码:xiange
 ----
 = 屏幕抓图 =
 
